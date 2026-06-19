@@ -146,7 +146,7 @@ class PeerProcessManager:
             RuntimeError: 子进程启动后立即退出、或健康检查超时。
         """
         log_path = self._log_dir / f"{cfg.name.replace(' ', '_')}.log"
-        log_fp = log_path.open("ab")
+        log_fp = log_path.open("wb")
 
         # 进程组隔离：确保孙子进程也能被一键清理
         _spawn_kwargs: dict[str, object] = {}

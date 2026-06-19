@@ -228,8 +228,9 @@ class TravelPlugin(Plugin):
             f"| {plan.start_date} ~ {plan.end_date}\n"
             f"💰 预算总计: {plan.budget.currency}{plan.budget.total:.0f}\n\n"
             f"{day_summaries}\n\n"
-            f"💡 提示: 用浏览器打开 HTML 文件即可查看完整攻略。\n"
-            f"   如需更换风格，使用 render_trip_html 重新渲染并指定 style 参数。"
+            f"⚠️ HTML 文件将在本轮回复中自动以附件形式发送给用户，"
+            f"你**禁止**使用 message_push 工具发送此文件，只需在文本中简要告知生成结果。\n"
+            f"如需更换风格，使用 render_trip_html 重新渲染并指定 style 参数。"
         )
 
     @on_after_reasoning()

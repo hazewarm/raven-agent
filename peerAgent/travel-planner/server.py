@@ -208,7 +208,8 @@ async def _handle_tasks_get(body: dict[str, Any]) -> dict[str, Any]:
                 f"  28 孟菲斯设计(memphis_design)  29 德国表现主义(german_expressionism)\n"
                 f"→ 用户选择后，调用 render_trip_html 工具：\n"
                 f"  参数 trip_json_path=\"{jp}\"，style=\"<用户选的风格 slug>\"\n"
-                f"→ 如果用户说「随便」或没回，默认用 art_deco 风格渲染。\n"
+                f"→ ★ 务必等待用户选择风格后再渲染，不要在当前轮自动渲染。\n"
+                f"→ 只有用户明确说「随便」「都行」「默认」时，才用 art_deco 风格渲染。\n"
                 f"→ 渲染完成后告知用户 HTML 文件路径。"
             )}],
         }]
