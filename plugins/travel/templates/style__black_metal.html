@@ -1,0 +1,375 @@
+{% extends "base.html" %}
+{% block style_vars %}
+<style>
+:root {
+  --color-bg: #050505;
+  --color-surface: #111111;
+  --color-primary: #a10f0f;
+  --color-secondary: #3d0000;
+  --color-accent: #b8860b;
+  --color-text: #e5e5e5;
+  --color-text-secondary: #999999;
+  --color-text-heading: #d32f2f;
+  --color-border: #2a2a2a;
+  --color-shadow: rgba(161, 15, 15, 0.3);
+  --font-heading: 'Noto Serif SC', 'Times New Roman', serif;
+  --font-body: 'Noto Sans SC', 'Helvetica Neue', sans-serif;
+  --font-mono: 'Courier New', monospace;
+  --font-size-h1: 3rem;
+  --font-size-h2: 2rem;
+  --font-size-h3: 1.5rem;
+  --font-size-body: 1rem;
+  --font-size-small: 0.875rem;
+  --line-height: 1.6;
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+  --space-xxl: 3rem;
+  --radius-sm: 0px;
+  --radius-md: 0px;
+  --radius-lg: 0px;
+  --transition-fast: 0.2s ease;
+  --transition-normal: 0.3s ease;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  line-height: var(--line-height);
+}
+</style>
+{% endblock %}
+
+{% block style_css %}
+<style>
+/* ===== 限制主容器宽度，避免桌面端铺满全屏 ===== */
+main, .container, .max-w-2xl {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+/* ===== 黑金属美学核心 ===== */
+.hero {
+  background-color: var(--color-bg);
+  position: relative;
+  overflow: hidden;
+  padding: var(--space-xxl) var(--space-md);
+  text-align: center;
+  border-bottom: 2px solid var(--color-primary);
+}
+.hero::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.15'/%3E%3C/svg%3E");
+  opacity: 0.08;
+  pointer-events: none;
+  mix-blend-mode: overlay;
+}
+.hero::after {
+  content: "";
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 24px;
+  background: repeating-linear-gradient(45deg, var(--color-bg) 0px, var(--color-bg) 10px, var(--color-primary) 10px, var(--color-primary) 12px);
+  transform: translateY(12px);
+}
+.hero h1 {
+  font-family: var(--font-heading);
+  font-size: var(--font-size-h1);
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--color-text-heading);
+  text-shadow: 0 0 20px rgba(200,0,0,0.7), 2px 2px 0 #000;
+  margin-bottom: var(--space-md);
+}
+.hero .subtitle {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-body);
+  color: var(--color-text-secondary);
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  margin-bottom: var(--space-lg);
+}
+.hero .weather-overview,
+.hero .budget-overview {
+  display: inline-block;
+  margin: var(--space-sm) var(--space-md);
+  padding: var(--space-sm) var(--space-lg);
+  border: 1px solid var(--color-border);
+  background: rgba(17,17,17,0.8);
+  font-size: var(--font-size-small);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+/* ----- 模块渗透：哥特切角框 + 噪点纹理 + 倒五角星 ----- */
+.day-card,
+.budget-section,
+.xhs-section,
+.tips-section,
+.emergency-section,
+.packing-section {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-primary);
+  outline: 1px solid var(--color-border);
+  outline-offset: -6px;
+  clip-path: polygon(0% 8px, 8px 0%, calc(100% - 8px) 0%, 100% 8px, 100% calc(100% - 8px), calc(100% - 8px) 100%, 8px 100%, 0% calc(100% - 8px));
+  position: relative;
+  margin: var(--space-lg) auto;
+  padding: var(--space-xl);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.8), inset 0 0 20px rgba(161,15,15,0.1);
+}
+.day-card::after,
+.budget-section::after,
+.xhs-section::after,
+.tips-section::after,
+.emergency-section::after,
+.packing-section::after {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.2'/%3E%3C/svg%3E");
+  opacity: 0.05;
+  pointer-events: none;
+  mix-blend-mode: screen;
+}
+
+.day-card h2,
+.budget-section h2,
+.xhs-section h2,
+.tips-section h2,
+.emergency-section h2,
+.packing-section h2 {
+  font-family: var(--font-heading);
+  font-size: var(--font-size-h2);
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--color-text-heading);
+  margin-bottom: var(--space-md);
+  display: flex;
+  align-items: center;
+}
+.day-card h2::before,
+.budget-section h2::before,
+.xhs-section h2::before,
+.tips-section h2::before,
+.emergency-section h2::before,
+.packing-section h2::before {
+  content: "⛧";
+  color: var(--color-primary);
+  font-size: 1.2em;
+  margin-right: var(--space-sm);
+  animation: flickerSymbol 2.5s infinite alternate;
+}
+@keyframes flickerSymbol {
+  0% { opacity: 1; text-shadow: 0 0 8px red; }
+  50% { opacity: 0.6; text-shadow: 0 0 2px red; }
+  100% { opacity: 1; text-shadow: 0 0 12px darkred; }
+}
+
+/* 日卡片内部 */
+.day-card .day-theme {
+  font-style: italic;
+  color: var(--color-accent);
+  margin-bottom: var(--space-md);
+  border-left: 3px solid var(--color-primary);
+  padding-left: var(--space-sm);
+}
+.weather-badge {
+  display: inline-block;
+  background: var(--color-secondary);
+  color: #fff;
+  padding: var(--space-xs) var(--space-sm);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-small);
+  letter-spacing: 0.1em;
+}
+.activity-item {
+  border-bottom: 1px dashed var(--color-border);
+  padding: var(--space-md) 0;
+  position: relative;
+  padding-left: var(--space-lg);
+}
+.activity-item::before {
+  content: "✠";
+  position: absolute;
+  left: 0;
+  top: var(--space-md);
+  color: var(--color-primary);
+  font-size: 0.9rem;
+}
+.activity-item h3 {
+  font-family: var(--font-heading);
+  font-size: var(--font-size-h3);
+  color: var(--color-text);
+  margin-bottom: var(--space-xs);
+}
+.activity-order {
+  display: none;
+}
+.activity-time,
+.activity-desc,
+.activity-location,
+.transport-info,
+.meal-info {
+  font-size: var(--font-size-small);
+  color: var(--color-text-secondary);
+}
+.activity-location a {
+  color: var(--color-accent);
+  text-decoration: none;
+  border-bottom: 1px dotted var(--color-accent);
+}
+.day-map {
+  border: 2px solid var(--color-primary);
+  margin-top: var(--space-lg);
+  height: 200px;
+  background: #000;
+}
+
+/* 预算 */
+.budget-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: var(--space-md);
+}
+.budget-item {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  padding: var(--space-sm) var(--space-md);
+  text-align: center;
+  font-family: var(--font-mono);
+  color: var(--color-text);
+}
+.budget-total {
+  grid-column: 1 / -1;
+  font-size: var(--font-size-h3);
+  font-weight: bold;
+  color: var(--color-primary);
+  text-shadow: 0 0 10px rgba(255,0,0,0.5);
+  animation: candleFlicker 3s infinite;
+}
+@keyframes candleFlicker {
+  0%, 100% { opacity: 1; text-shadow: 0 0 15px var(--color-primary); }
+  50% { opacity: 0.7; text-shadow: 0 0 5px var(--color-primary); }
+}
+
+/* 小红书 */
+.xhs-note {
+  background: var(--color-bg);
+  border-left: 4px solid var(--color-primary);
+  margin-bottom: var(--space-lg);
+  padding: var(--space-md);
+  position: relative;
+}
+.xhs-note::before {
+  content: "☽";
+  position: absolute;
+  top: -10px;
+  right: 10px;
+  font-size: 1.5rem;
+  color: var(--color-accent);
+  opacity: 0.4;
+}
+
+/* 贴士 & 紧急 & 行李 */
+.tips-section ul {
+  list-style: none;
+  padding-left: 0;
+}
+.tips-section li {
+  position: relative;
+  padding-left: var(--space-xl);
+  margin-bottom: var(--space-sm);
+}
+.tips-section li::before {
+  content: "⸸";
+  position: absolute;
+  left: 0;
+  color: var(--color-primary);
+  font-weight: bold;
+}
+.emergency-section {
+  background-color: #1a0000;
+  border-color: #ff0000;
+}
+.emergency-section p,
+.emergency-section li {
+  color: #ffcccc;
+}
+.packing-section ul {
+  list-style: none;
+  padding-left: 0;
+}
+.packing-section li {
+  padding-left: var(--space-xl);
+  position: relative;
+  margin-bottom: var(--space-xs);
+}
+.packing-section li::before {
+  content: "⛧";
+  position: absolute;
+  left: 0;
+  color: var(--color-primary);
+  font-size: 0.8rem;
+}
+
+/* 页脚 */
+footer {
+  background-color: var(--color-bg);
+  border-top: 2px solid var(--color-primary);
+  padding: var(--space-xl);
+  text-align: center;
+  font-family: var(--font-mono);
+  color: var(--color-text-secondary);
+  letter-spacing: 0.2em;
+  position: relative;
+}
+footer::before {
+  content: "";
+  position: absolute;
+  top: -2px;
+  left: 0; right: 0;
+  height: 6px;
+  background: repeating-linear-gradient(90deg, var(--color-primary) 0px, var(--color-primary) 10px, transparent 10px, transparent 20px);
+}
+
+/* 验证徽章 */
+.verification-badge.community-match {
+  color: var(--color-accent);
+  border: 1px solid var(--color-accent);
+  padding: var(--space-xs) var(--space-sm);
+  display: inline-block;
+  margin-top: var(--space-sm);
+  animation: flickerSymbol 2s infinite;
+}
+.verification-badge.community-only {
+  color: var(--color-text-secondary);
+}
+
+@media (max-width: 640px) {
+  .hero h1 { font-size: 2.2rem; }
+}
+</style>
+{% endblock %}
+
+{% block header_decor %}
+<div class="hero-decor absolute top-0 left-0 w-full h-full pointer-events-none z-10">
+  <svg viewBox="0 0 200 200" class="absolute top-4 right-4 w-16 h-16 opacity-20">
+    <polygon points="100,10 118,67 178,67 129,102 148,158 100,123 52,158 71,102 22,67 82,67" fill="none" stroke="#a10f0f" stroke-width="2"/>
+    <circle cx="100" cy="92" r="30" fill="none" stroke="#a10f0f" stroke-width="1"/>
+  </svg>
+  <div class="absolute bottom-8 left-1/2 transform -translate-x-1/2 text-6xl text-red-900 opacity-30 select-none">⛧</div>
+</div>
+{% endblock %}
+
+{% block footer_decor %}
+<div class="footer-decor text-center mt-4 opacity-50 select-none">
+  <span class="text-2xl mx-2">⛧</span>
+  <span class="text-sm tracking-widest">OBSCURUM PER OBSCURIUS</span>
+  <span class="text-2xl mx-2">⛧</span>
+</div>
+{% endblock %}

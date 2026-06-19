@@ -1,0 +1,1174 @@
+{% extends "base.html" %}
+
+{% block style_vars %}
+<style>
+  :root {
+    /* === 新未来主义色彩体系 === */
+    --color-bg: #080810;
+    --color-surface: rgba(18, 18, 32, 0.75);
+    --color-primary: #00c8ff;
+    --color-secondary: #b8b8c8;
+    --color-accent: #ff5500;
+    --color-text: #e4e4ec;
+    --color-text-secondary: #9090a4;
+    --color-text-heading: #f0f0f8;
+    --color-border: rgba(180, 180, 200, 0.18);
+    --color-shadow: rgba(0, 180, 240, 0.12);
+
+    /* === 新未来主义字体 === */
+    --font-heading: 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    --font-body: 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    --font-mono: 'SF Mono', 'JetBrains Mono', 'Consolas', monospace;
+
+    /* === 动态字体大小 === */
+    --font-size-h1: 2.6rem;
+    --font-size-h2: 1.45rem;
+    --font-size-h3: 1.1rem;
+    --font-size-body: 0.95rem;
+    --font-size-small: 0.8rem;
+    --line-height: 1.7;
+
+    /* === 流体间距 === */
+    --space-xs: 0.35rem;
+    --space-sm: 0.7rem;
+    --space-md: 1.2rem;
+    --space-lg: 1.5rem;
+    --space-xl: 2.8rem;
+    --space-xxl: 4rem;
+
+    /* === 斜切角半径（新未来主义特征） === */
+    --radius-sm: 3px;
+    --radius-md: 6px;
+    --radius-lg: 10px;
+
+    /* === 流动过渡 === */
+    --transition-fast: 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-normal: 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+</style>
+{% endblock %}
+
+{% block style_css %}
+<style>
+  /* ============================================================
+     容器宽度约束
+     ============================================================ */
+  main,
+  .container,
+  .max-w-2xl {
+    max-width: 720px;
+    margin: 0 auto;
+  }
+
+  /* ============================================================
+     BODY - 深空背景 + 参数化菱形网格纹理
+     ============================================================ */
+  body {
+    background-color: #080810;
+    background-image:
+      /* 参数化菱形网格 */
+      repeating-linear-gradient(
+        135deg,
+        transparent,
+        transparent 28px,
+        rgba(0, 200, 255, 0.018) 28px,
+        rgba(0, 200, 255, 0.018) 29px
+      ),
+      repeating-linear-gradient(
+        45deg,
+        transparent,
+        transparent 28px,
+        rgba(0, 200, 255, 0.018) 28px,
+        rgba(0, 200, 255, 0.018) 29px
+      ),
+      /* 微妙的径向光晕 */
+      radial-gradient(
+        ellipse 900px 600px at 50% 0%,
+        rgba(0, 180, 240, 0.06) 0%,
+        transparent 70%
+      ),
+      radial-gradient(
+        ellipse 600px 500px at 85% 40%,
+        rgba(255, 85, 0, 0.03) 0%,
+        transparent 70%
+      ),
+      radial-gradient(
+        ellipse 500px 400px at 15% 65%,
+        rgba(0, 200, 255, 0.03) 0%,
+        transparent 70%
+      );
+    background-attachment: fixed;
+    color: var(--color-text);
+    font-family: var(--font-body);
+    font-size: var(--font-size-body);
+    line-height: var(--line-height);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* ============================================================
+     HERO - 封面区：流动曲线 + 参数化装饰 + 斜切光效
+     ============================================================ */
+  .hero {
+    position: relative;
+    padding: var(--space-xxl) var(--space-lg) var(--space-xl);
+    margin-bottom: var(--space-xl);
+    background:
+      /* 拉丝金属纹理 */
+      repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(200, 200, 220, 0.012) 2px,
+        rgba(200, 200, 220, 0.012) 3px
+      ),
+      /* 表面基底 */
+      linear-gradient(
+        160deg,
+        rgba(14, 14, 30, 0.9) 0%,
+        rgba(10, 10, 22, 0.92) 40%,
+        rgba(16, 16, 36, 0.88) 100%
+      );
+    border: 1px solid rgba(180, 180, 200, 0.15);
+    border-top: none;
+    clip-path: polygon(
+      0 0,
+      100% 0,
+      100% calc(100% - 18px),
+      calc(100% - 18px) 100%,
+      0 100%,
+      0 0
+    );
+    overflow: visible;
+    z-index: 1;
+  }
+
+  /* Hero 顶部发光流线 */
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(0, 200, 255, 0.5) 8%,
+      rgba(0, 200, 255, 0.9) 25%,
+      rgba(0, 200, 255, 0.5) 50%,
+      rgba(255, 85, 0, 0.5) 65%,
+      rgba(0, 200, 255, 0.4) 80%,
+      transparent 100%
+    );
+    z-index: 3;
+    box-shadow:
+      0 0 12px rgba(0, 200, 255, 0.5),
+      0 0 28px rgba(0, 200, 255, 0.2),
+      0 0 50px rgba(0, 180, 240, 0.08);
+  }
+
+  /* Hero 右下参数化光斑 */
+  .hero::after {
+    content: '';
+    position: absolute;
+    bottom: -30px;
+    right: -20px;
+    width: 180px;
+    height: 180px;
+    background:
+      radial-gradient(
+        circle,
+        rgba(0, 200, 255, 0.07) 0%,
+        rgba(0, 200, 255, 0.03) 35%,
+        transparent 70%
+      );
+    border-radius: 50%;
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  .hero h1 {
+    font-family: var(--font-heading);
+    font-size: var(--font-size-h1);
+    font-weight: 700;
+    color: var(--color-text-heading);
+    letter-spacing: 0.04em;
+    text-shadow:
+      0 0 30px rgba(0, 200, 255, 0.25),
+      0 0 60px rgba(0, 180, 240, 0.1);
+    position: relative;
+    z-index: 2;
+    margin-bottom: var(--space-sm);
+  }
+
+  .hero .subtitle {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-small);
+    color: var(--color-secondary);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    position: relative;
+    z-index: 2;
+    padding-left: var(--space-md);
+    border-left: 2px solid var(--color-primary);
+    box-shadow: -4px 0 12px rgba(0, 200, 255, 0.15);
+  }
+
+  .hero .weather-overview {
+    position: relative;
+    z-index: 2;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-xs);
+    padding: var(--space-xs) var(--space-sm);
+    margin-top: var(--space-sm);
+    background: rgba(0, 180, 220, 0.08);
+    border: 1px solid rgba(0, 200, 255, 0.2);
+    clip-path: polygon(6px 0, 100% 0, calc(100% - 6px) 100%, 0 100%);
+    font-size: var(--font-size-small);
+    color: var(--color-primary);
+    letter-spacing: 0.05em;
+  }
+
+  .hero .budget-overview {
+    position: relative;
+    z-index: 2;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-xs);
+    padding: var(--space-xs) var(--space-sm);
+    margin-top: var(--space-sm);
+    margin-left: var(--space-sm);
+    background: rgba(255, 85, 0, 0.06);
+    border: 1px solid rgba(255, 85, 0, 0.25);
+    clip-path: polygon(6px 0, 100% 0, calc(100% - 6px) 100%, 0 100%);
+    font-size: var(--font-size-small);
+    color: var(--color-accent);
+    letter-spacing: 0.05em;
+  }
+
+  /* ============================================================
+     DAY-CARD - 斜切角 + 拉丝金属 + 流线型侧边装饰
+     ============================================================ */
+  .day-card {
+    position: relative;
+    background:
+      /* 拉丝金属微纹理 */
+      repeating-linear-gradient(
+        90deg,
+        transparent,
+        transparent 3px,
+        rgba(180, 180, 200, 0.015) 3px,
+        rgba(180, 180, 200, 0.015) 4px
+      ),
+      /* 磨砂玻璃表面 */
+      rgba(16, 16, 30, 0.7);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border: 1px solid rgba(180, 180, 200, 0.16);
+    clip-path: polygon(
+      10px 0,
+      100% 0,
+      100% calc(100% - 10px),
+      calc(100% - 10px) 100%,
+      0 100%,
+      0 10px
+    );
+    padding: var(--space-lg);
+    margin-bottom: var(--space-lg);
+    transition: var(--transition-normal);
+    z-index: 1;
+  }
+
+  /* 左侧流线型发光装饰条 */
+  .day-card::before {
+    content: '';
+    position: absolute;
+    left: -1px;
+    top: 18px;
+    bottom: 18px;
+    width: 3px;
+    background: linear-gradient(
+      180deg,
+      transparent 0%,
+      rgba(0, 200, 255, 0.25) 8%,
+      rgba(0, 200, 255, 0.7) 30%,
+      rgba(0, 200, 255, 0.9) 50%,
+      rgba(0, 200, 255, 0.7) 70%,
+      rgba(0, 200, 255, 0.25) 92%,
+      transparent 100%
+    );
+    border-radius: 2px;
+    box-shadow:
+      0 0 8px rgba(0, 200, 255, 0.4),
+      2px 0 14px rgba(0, 200, 255, 0.12);
+    z-index: 2;
+  }
+
+  /* 右上角参数化角标 */
+  .day-card::after {
+    content: '';
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 32px;
+    height: 32px;
+    background:
+      repeating-conic-gradient(
+        rgba(0, 200, 255, 0.06) 0% 3%,
+        transparent 3% 12%
+      );
+    border-radius: 50%;
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  .day-card h2 {
+    font-family: var(--font-heading);
+    font-size: var(--font-size-h2);
+    font-weight: 650;
+    color: var(--color-text-heading);
+    letter-spacing: 0.05em;
+    position: relative;
+    z-index: 2;
+    display: inline-block;
+    padding-right: var(--space-lg);
+  }
+
+  /* 标题下方的流动下划线 */
+  .day-card h2::after {
+    content: '';
+    display: block;
+    width: 60%;
+    height: 2px;
+    margin-top: 4px;
+    background: linear-gradient(
+      90deg,
+      rgba(0, 200, 255, 0.8) 0%,
+      rgba(0, 200, 255, 0.2) 70%,
+      transparent 100%
+    );
+    border-radius: 1px;
+  }
+
+  .day-card .day-theme {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-small);
+    color: var(--color-primary);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    position: relative;
+    z-index: 2;
+    margin-bottom: var(--space-sm);
+  }
+
+  .day-card .weather-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 10px;
+    background: rgba(0, 180, 220, 0.1);
+    border: 1px solid rgba(0, 200, 255, 0.22);
+    clip-path: polygon(5px 0, 100% 0, calc(100% - 5px) 100%, 0 100%);
+    font-size: var(--font-size-small);
+    color: var(--color-primary);
+    position: relative;
+    z-index: 2;
+  }
+
+  .day-card .hotel-info {
+    position: relative;
+    z-index: 2;
+    margin-top: var(--space-md);
+    padding: var(--space-sm) var(--space-md);
+    background: rgba(255, 255, 255, 0.025);
+    border-left: 2px solid rgba(0, 200, 255, 0.35);
+    font-size: var(--font-size-small);
+    color: var(--color-text-secondary);
+  }
+
+  /* day-map 安全样式（不使用 filter/opacity/mix-blend-mode/backdrop-filter） */
+  .day-card .day-map {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    height: 200px;
+    margin-top: var(--space-md);
+    border: 1px solid rgba(180, 180, 200, 0.2);
+    clip-path: polygon(6px 0, 100% 0, calc(100% - 6px) 100%, 0 100%);
+    background: #0a0a14;
+    overflow: hidden;
+  }
+
+  /* ============================================================
+     ACTIVITY-ITEM - 流线型时间标记 + 斜切分隔
+     ============================================================ */
+  .activity-item {
+    position: relative;
+    padding: var(--space-md) 0;
+    padding-left: var(--space-lg);
+    border-bottom: 1px solid rgba(180, 180, 200, 0.08);
+    z-index: 2;
+    transition: var(--transition-fast);
+  }
+
+  .activity-item:last-child {
+    border-bottom: none;
+  }
+
+  /* 流线型时间轴标记 */
+  .activity-item::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 22px;
+    width: 8px;
+    height: 8px;
+    background: var(--color-primary);
+    border-radius: 50%;
+    box-shadow:
+      0 0 8px rgba(0, 200, 255, 0.6),
+      0 0 18px rgba(0, 200, 255, 0.25);
+    z-index: 3;
+  }
+
+  /* 时间轴连接线 */
+  .activity-item::after {
+    content: '';
+    position: absolute;
+    left: 3.5px;
+    top: 34px;
+    bottom: -2px;
+    width: 1px;
+    background: linear-gradient(
+      180deg,
+      rgba(0, 200, 255, 0.35) 0%,
+      rgba(0, 200, 255, 0.08) 70%,
+      transparent 100%
+    );
+    z-index: 1;
+  }
+
+  .activity-item:last-child::after {
+    display: none;
+  }
+
+  .activity-item h3 {
+    font-family: var(--font-heading);
+    font-size: var(--font-size-h3);
+    font-weight: 600;
+    color: var(--color-text-heading);
+    letter-spacing: 0.03em;
+    position: relative;
+    z-index: 2;
+  }
+
+  .activity-item .activity-order {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-small);
+    color: var(--color-primary);
+    letter-spacing: 0.06em;
+    position: relative;
+    z-index: 2;
+  }
+
+  .activity-item .activity-time {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-small);
+    color: var(--color-secondary);
+    letter-spacing: 0.04em;
+    position: relative;
+    z-index: 2;
+  }
+
+  .activity-item .activity-desc {
+    color: var(--color-text);
+    position: relative;
+    z-index: 2;
+    margin-top: 2px;
+  }
+
+  .activity-item .activity-location {
+    position: relative;
+    z-index: 2;
+    font-size: var(--font-size-small);
+  }
+
+  .activity-item .activity-location a {
+    color: var(--color-primary);
+    text-decoration: none;
+    border-bottom: 1px dotted rgba(0, 200, 255, 0.35);
+    transition: var(--transition-fast);
+  }
+
+  .activity-item .activity-location a:hover {
+    color: #33d6ff;
+    border-bottom-color: rgba(0, 200, 255, 0.7);
+    text-shadow: 0 0 8px rgba(0, 200, 255, 0.3);
+  }
+
+  .activity-item .transport-info {
+    font-size: var(--font-size-small);
+    color: var(--color-text-secondary);
+    position: relative;
+    z-index: 2;
+  }
+
+  .activity-item .meal-info {
+    font-size: var(--font-size-small);
+    color: var(--color-accent);
+    position: relative;
+    z-index: 2;
+    letter-spacing: 0.03em;
+  }
+
+  /* ============================================================
+     BUDGET-SECTION - 碳纤维纹理 + 斜切框架 + 发光数字
+     ============================================================ */
+  .budget-section {
+    position: relative;
+    padding: var(--space-lg);
+    margin-bottom: var(--space-lg);
+    background:
+      /* 碳纤维纹理 */
+      repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(60, 60, 70, 0.06) 2px,
+        rgba(60, 60, 70, 0.06) 3px
+      ),
+      repeating-linear-gradient(
+        90deg,
+        transparent,
+        transparent 2px,
+        rgba(50, 50, 60, 0.04) 2px,
+        rgba(50, 50, 60, 0.04) 3px
+      ),
+      rgba(12, 12, 24, 0.8);
+    border: 1px solid rgba(180, 180, 200, 0.14);
+    clip-path: polygon(
+      8px 0,
+      100% 0,
+      100% calc(100% - 8px),
+      calc(100% - 8px) 100%,
+      0 100%,
+      0 8px
+    );
+    z-index: 1;
+  }
+
+  /* 顶部参数化装饰线 */
+  .budget-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 20px;
+    right: 20px;
+    height: 1px;
+    background: repeating-linear-gradient(
+      90deg,
+      rgba(0, 200, 255, 0.35) 0px,
+      rgba(0, 200, 255, 0.35) 6px,
+      transparent 6px,
+      transparent 12px,
+      rgba(255, 85, 0, 0.25) 12px,
+      rgba(255, 85, 0, 0.25) 16px,
+      transparent 16px,
+      transparent 22px
+    );
+    z-index: 3;
+  }
+
+  .budget-section .budget-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: var(--space-md);
+    position: relative;
+    z-index: 2;
+  }
+
+  .budget-section .budget-item {
+    padding: var(--space-sm) var(--space-md);
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(180, 180, 200, 0.12);
+    clip-path: polygon(4px 0, 100% 0, calc(100% - 4px) 100%, 0 100%);
+    text-align: center;
+    font-family: var(--font-mono);
+    font-size: var(--font-size-small);
+    color: var(--color-text-secondary);
+    letter-spacing: 0.05em;
+  }
+
+  .budget-section .budget-item i {
+    display: block;
+    color: var(--color-text-secondary);
+    margin-bottom: 2px;
+  }
+
+  .budget-section .budget-item .budget-amount {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--color-primary);
+    margin-top: 2px;
+    text-shadow: 0 0 10px rgba(0, 200, 255, 0.35);
+  }
+
+  .budget-section .budget-total {
+    text-align: right;
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 1.3rem;
+    color: var(--color-text-heading);
+    margin-top: var(--space-md);
+    padding-top: var(--space-sm);
+    border-top: 1px solid rgba(180, 180, 200, 0.15);
+    position: relative;
+    z-index: 2;
+    letter-spacing: 0.04em;
+  }
+
+  .budget-section .budget-total::before {
+    content: '◆ ';
+    color: var(--color-accent);
+    font-size: 0.6rem;
+    vertical-align: middle;
+    text-shadow: 0 0 6px rgba(255, 85, 0, 0.5);
+  }
+
+  /* ============================================================
+     XHS-SECTION - 磨砂玻璃卡片 + 流动曲线顶饰
+     ============================================================ */
+  .xhs-section {
+    position: relative;
+    padding: var(--space-lg);
+    margin-bottom: var(--space-lg);
+    background:
+      radial-gradient(
+        ellipse 400px 200px at 50% 0%,
+        rgba(255, 85, 0, 0.04) 0%,
+        transparent 70%
+      ),
+      rgba(14, 14, 28, 0.7);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(180, 180, 200, 0.15);
+    clip-path: polygon(
+      0 0,
+      100% 0,
+      100% calc(100% - 10px),
+      calc(100% - 10px) 100%,
+      0 100%,
+      0 0
+    );
+    z-index: 1;
+  }
+
+  /* 顶部流动曲线装饰 */
+  .xhs-section::before {
+    content: '';
+    position: absolute;
+    top: -1px;
+    left: 8%;
+    right: 8%;
+    height: 2px;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(255, 85, 0, 0.5) 15%,
+      rgba(255, 85, 0, 0.7) 35%,
+      rgba(0, 200, 255, 0.6) 55%,
+      rgba(0, 200, 255, 0.3) 75%,
+      transparent 100%
+    );
+    border-radius: 2px;
+    box-shadow: 0 0 14px rgba(255, 85, 0, 0.2);
+    z-index: 3;
+  }
+
+  .xhs-section .xhs-note {
+    position: relative;
+    padding: var(--space-md);
+    margin-bottom: var(--space-md);
+    background: rgba(20, 20, 38, 0.55);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(180, 180, 200, 0.12);
+    clip-path: polygon(5px 0, 100% 0, calc(100% - 5px) 100%, 0 100%);
+    z-index: 2;
+    transition: var(--transition-fast);
+  }
+
+  .xhs-section .xhs-note:last-child {
+    margin-bottom: 0;
+  }
+
+  /* 左侧小菱形标记 */
+  .xhs-section .xhs-note::before {
+    content: '◆';
+    position: absolute;
+    left: -7px;
+    top: 14px;
+    font-size: 7px;
+    color: var(--color-accent);
+    text-shadow: 0 0 6px rgba(255, 85, 0, 0.5);
+    z-index: 3;
+  }
+
+  /* ============================================================
+     TIPS-SECTION - 参数化边框 + 流线型列表标记
+     ============================================================ */
+  .tips-section {
+    position: relative;
+    padding: var(--space-lg);
+    margin-bottom: var(--space-lg);
+    background: rgba(12, 12, 26, 0.7);
+    border: 1px solid rgba(180, 180, 200, 0.13);
+    clip-path: polygon(
+      6px 0,
+      100% 0,
+      100% calc(100% - 6px),
+      calc(100% - 6px) 100%,
+      0 100%,
+      0 6px
+    );
+    z-index: 1;
+  }
+
+  /* 背景参数化网格 */
+  .tips-section::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 40px,
+        rgba(0, 200, 255, 0.012) 40px,
+        rgba(0, 200, 255, 0.012) 41px
+      ),
+      repeating-linear-gradient(
+        90deg,
+        transparent,
+        transparent 40px,
+        rgba(0, 200, 255, 0.012) 40px,
+        rgba(0, 200, 255, 0.012) 41px
+      );
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  .tips-section ul {
+    position: relative;
+    z-index: 2;
+    list-style: none;
+    padding-left: 0;
+  }
+
+  .tips-section ul li {
+    position: relative;
+    padding: var(--space-sm) 0;
+    padding-left: var(--space-lg);
+    border-bottom: 1px solid rgba(180, 180, 200, 0.06);
+    font-size: var(--font-size-body);
+    color: var(--color-text);
+  }
+
+  .tips-section ul li:last-child {
+    border-bottom: none;
+  }
+
+  /* 流线型菱形标记 */
+  .tips-section ul li::before {
+    content: '◇';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 8px;
+    color: var(--color-primary);
+    text-shadow: 0 0 5px rgba(0, 200, 255, 0.4);
+  }
+
+  /* ============================================================
+     EMERGENCY-SECTION - 脉冲光晕边框
+     ============================================================ */
+  .emergency-section {
+    position: relative;
+    padding: var(--space-lg);
+    margin-bottom: var(--space-lg);
+    background: rgba(16, 8, 8, 0.7);
+    border: 1px solid rgba(255, 85, 0, 0.3);
+    clip-path: polygon(
+      8px 0,
+      100% 0,
+      100% calc(100% - 8px),
+      calc(100% - 8px) 100%,
+      0 100%,
+      0 8px
+    );
+    z-index: 1;
+    animation: emergencyPulse 3.5s ease-in-out infinite;
+  }
+
+  @keyframes emergencyPulse {
+    0%,
+    100% {
+      box-shadow:
+        0 0 8px rgba(255, 85, 0, 0.15),
+        inset 0 0 8px rgba(255, 85, 0, 0.04);
+    }
+    50% {
+      box-shadow:
+        0 0 20px rgba(255, 85, 0, 0.28),
+        inset 0 0 16px rgba(255, 85, 0, 0.07);
+    }
+  }
+
+  /* 顶部警示线 */
+  .emergency-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 15px;
+    right: 15px;
+    height: 1px;
+    background: repeating-linear-gradient(
+      90deg,
+      rgba(255, 85, 0, 0.7) 0px,
+      rgba(255, 85, 0, 0.7) 5px,
+      transparent 5px,
+      transparent 10px
+    );
+    z-index: 3;
+  }
+
+  .emergency-section p,
+  .emergency-section div {
+    position: relative;
+    z-index: 2;
+    color: var(--color-text);
+  }
+
+  .emergency-section strong {
+    color: var(--color-accent);
+    font-weight: 650;
+    letter-spacing: 0.03em;
+  }
+
+  /* ============================================================
+     PACKING-SECTION - 参数化背景 + 斜切列表
+     ============================================================ */
+  .packing-section {
+    position: relative;
+    padding: var(--space-lg);
+    margin-bottom: var(--space-lg);
+    background:
+      /* 参数化蜂窝纹理 */
+      repeating-conic-gradient(
+        rgba(0, 200, 255, 0.025) 0% 3%,
+        transparent 3% 16.66%
+      ),
+      rgba(11, 11, 24, 0.75);
+    border: 1px solid rgba(180, 180, 200, 0.13);
+    clip-path: polygon(
+      6px 0,
+      100% 0,
+      100% calc(100% - 6px),
+      calc(100% - 6px) 100%,
+      0 100%,
+      0 6px
+    );
+    z-index: 1;
+  }
+
+  .packing-section ul {
+    position: relative;
+    z-index: 2;
+    list-style: none;
+    padding-left: 0;
+  }
+
+  .packing-section ul li {
+    position: relative;
+    padding: var(--space-xs) 0;
+    padding-left: var(--space-lg);
+    font-size: var(--font-size-body);
+    color: var(--color-text);
+  }
+
+  .packing-section ul li::before {
+    content: '▹';
+    position: absolute;
+    left: 2px;
+    color: var(--color-primary);
+    font-size: 10px;
+    text-shadow: 0 0 4px rgba(0, 200, 255, 0.4);
+  }
+
+  /* ============================================================
+     FOOTER - 流动波浪装饰
+     ============================================================ */
+  footer {
+    position: relative;
+    padding: var(--space-xl) var(--space-lg);
+    text-align: center;
+    background:
+      linear-gradient(
+        0deg,
+        rgba(8, 8, 16, 0.95) 0%,
+        rgba(12, 12, 24, 0.8) 50%,
+        rgba(16, 16, 30, 0.5) 100%
+      );
+    border-top: 1px solid rgba(180, 180, 200, 0.1);
+    z-index: 1;
+    font-size: var(--font-size-small);
+    color: var(--color-text-secondary);
+    letter-spacing: 0.06em;
+  }
+
+  /* 顶部流动波浪 */
+  footer::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: 10%;
+    right: 10%;
+    height: 2px;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(0, 200, 255, 0.35) 20%,
+      rgba(0, 200, 255, 0.15) 45%,
+      rgba(255, 85, 0, 0.25) 60%,
+      rgba(0, 200, 255, 0.2) 80%,
+      transparent 100%
+    );
+    border-radius: 2px;
+    z-index: 3;
+  }
+
+  /* ============================================================
+     VERIFICATION-BADGE - 科技感可信度徽章
+     ============================================================ */
+  .verification-badge.community-match,
+  .verification-badge.community-only {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 12px;
+    font-family: var(--font-mono);
+    font-size: var(--font-size-small);
+    letter-spacing: 0.05em;
+    clip-path: polygon(5px 0, 100% 0, calc(100% - 5px) 100%, 0 100%);
+    position: relative;
+    z-index: 2;
+  }
+
+  .verification-badge.community-match {
+    background: rgba(0, 200, 120, 0.08);
+    border: 1px solid rgba(0, 200, 120, 0.3);
+    color: #00c878;
+    text-shadow: 0 0 8px rgba(0, 200, 120, 0.3);
+  }
+
+  .verification-badge.community-only {
+    background: rgba(0, 180, 240, 0.08);
+    border: 1px solid rgba(0, 200, 255, 0.25);
+    color: var(--color-primary);
+    text-shadow: 0 0 8px rgba(0, 200, 255, 0.25);
+  }
+
+  /* ============================================================
+     装饰性HERO SVG曲线容器
+     ============================================================ */
+  .hero-decor-curves {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+  }
+
+  .hero-decor-curves svg {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    opacity: 0.5;
+  }
+
+  /* ============================================================
+     全局斜切装饰条（用于模块间的视觉连接）
+     ============================================================ */
+  .day-card + .day-card {
+    margin-top: -4px;
+  }
+
+  /* ============================================================
+     响应式微调
+     ============================================================ */
+  @media (max-width: 640px) {
+    :root {
+      --font-size-h1: 1.9rem;
+      --font-size-h2: 1.2rem;
+      --font-size-h3: 1rem;
+      --space-xxl: 2.5rem;
+      --space-xl: 1.8rem;
+      --space-lg: 1.3rem;
+    }
+
+    .hero {
+      clip-path: polygon(
+        0 0,
+        100% 0,
+        100% calc(100% - 10px),
+        calc(100% - 10px) 100%,
+        0 100%,
+        0 0
+      );
+      padding: var(--space-xl) var(--space-md) var(--space-lg);
+    }
+
+    .day-card {
+      clip-path: polygon(
+        6px 0,
+        100% 0,
+        100% calc(100% - 6px),
+        calc(100% - 6px) 100%,
+        0 100%,
+        0 6px
+      );
+      padding: var(--space-md);
+    }
+
+    .day-card::after {
+      width: 20px;
+      height: 20px;
+      top: 10px;
+      right: 10px;
+    }
+
+    .budget-section .budget-grid {
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-sm);
+    }
+
+    .hero .budget-overview {
+      margin-left: 0;
+      margin-top: var(--space-xs);
+    }
+  }
+
+  @media (max-width: 380px) {
+    :root {
+      --font-size-h1: 1.6rem;
+      --space-lg: 1rem;
+    }
+
+    .hero {
+      clip-path: polygon(
+        0 0,
+        100% 0,
+        100% calc(100% - 6px),
+        calc(100% - 6px) 100%,
+        0 100%,
+        0 0
+      );
+    }
+
+    .day-card {
+      clip-path: polygon(
+        4px 0,
+        100% 0,
+        100% calc(100% - 4px),
+        calc(100% - 4px) 100%,
+        0 100%,
+        0 4px
+      );
+    }
+
+    .budget-section .budget-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block header_decor %}
+<div class="hero-decor-curves" aria-hidden="true">
+  <svg viewBox="0 0 720 400" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+    <!-- 主流动曲线 - 扎哈风格 -->
+    <path
+      d="M0,280 C120,200 200,340 360,240 C520,140 600,300 720,200"
+      fill="none"
+      stroke="rgba(0,200,255,0.12)"
+      stroke-width="1.5"
+      stroke-linecap="round"
+    />
+    <path
+      d="M-40,320 C140,260 240,380 400,280 C560,180 640,350 760,250"
+      fill="none"
+      stroke="rgba(0,200,255,0.06)"
+      stroke-width="1"
+      stroke-linecap="round"
+    />
+    <path
+      d="M0,350 C160,300 280,400 440,310 C600,220 680,380 720,340"
+      fill="none"
+      stroke="rgba(255,85,0,0.08)"
+      stroke-width="1"
+      stroke-linecap="round"
+    />
+
+    <!-- 参数化几何节点 -->
+    <circle cx="180" cy="268" r="2.5" fill="rgba(0,200,255,0.35)" />
+    <circle cx="360" cy="240" r="3" fill="rgba(0,200,255,0.45)" />
+    <circle cx="540" cy="220" r="2" fill="rgba(0,200,255,0.25)" />
+
+    <!-- 菱形参数化标记 -->
+    <polygon
+      points="355,233 360,228 365,233 360,238"
+      fill="rgba(0,200,255,0.4)"
+    />
+    <polygon
+      points="175,261 180,256 185,261 180,266"
+      fill="rgba(255,85,0,0.3)"
+    />
+
+    <!-- 放射状细线 -->
+    <line x1="360" y1="240" x2="360" y2="180" stroke="rgba(0,200,255,0.08)" stroke-width="0.5" />
+    <line x1="360" y1="240" x2="400" y2="200" stroke="rgba(0,200,255,0.06)" stroke-width="0.5" />
+    <line x1="360" y1="240" x2="320" y2="200" stroke="rgba(0,200,255,0.06)" stroke-width="0.5" />
+  </svg>
+</div>
+{% endblock %}
+
+{% block footer_decor %}
+<div aria-hidden="true" style="position:absolute;bottom:0;left:0;right:0;height:60px;pointer-events:none;z-index:0;overflow:hidden;">
+  <svg viewBox="0 0 720 60" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;opacity:0.35;">
+    <!-- 底部流动波浪 -->
+    <path
+      d="M0,45 C100,20 180,55 300,30 C420,5 500,50 600,28 C660,18 700,38 720,32"
+      fill="none"
+      stroke="rgba(0,200,255,0.2)"
+      stroke-width="1"
+      stroke-linecap="round"
+    />
+    <path
+      d="M0,50 C130,35 220,58 340,38 C460,18 540,55 660,35 C700,28 720,42 720,42"
+      fill="none"
+      stroke="rgba(255,85,0,0.12)"
+      stroke-width="0.8"
+      stroke-linecap="round"
+    />
+    <!-- 底部参数化节点 -->
+    <circle cx="200" cy="30" r="1.5" fill="rgba(0,200,255,0.3)" />
+    <circle cx="420" cy="22" r="1.8" fill="rgba(0,200,255,0.35)" />
+    <circle cx="580" cy="30" r="1.2" fill="rgba(0,200,255,0.2)" />
+  </svg>
+</div>
+{% endblock %}

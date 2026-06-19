@@ -1,0 +1,100 @@
+[llm]
+provider = "deepseek"
+model = "deepseek-v4-pro"
+api_key = ""
+base_url = "https://api.deepseek.com"
+max_tokens = 2048
+streaming = true
+
+[channels]
+socket = "/tmp/raven-agent.sock"
+
+[channels.telegram]
+enabled = true
+token = "${TELEGRAM_BOT_TOKEN}"
+allow_from = []
+
+[tools.web_search]
+api_key = ""
+gl = "cn"
+hl = "zh-cn"
+
+[memory]
+enabled = true
+
+[memory.embedding]
+enabled = false
+provider = "openai-compatible"
+model = "text-embedding-v3"
+api_key = ""
+base_url = "https://dashscope.aliyuncs.com/compatible-mode/v1"
+dimensions = 0
+
+[vl]
+multimodal = false
+model = "qwen3-vl-flash"
+api_key = ""
+base_url = "https://dashscope.aliyuncs.com/compatible-mode/v1"
+
+[audio]
+enabled = false
+model = "small"
+
+[agent]
+system_prompt = "You are Raven, a concise and helpful AI assistant."
+subagent_model = ""
+peer_enabled = true
+peer_agents_toml = "peer_agents.toml"
+
+[plugins]
+enabled = true
+dirs = ["plugins"]
+
+[plugins.builtins]
+shell_safety = true
+tool_loop_guard = true
+context_pressure = true
+status_commands = true
+citation = true
+memory_rollup = true
+observe = true
+
+[scheduler]
+enabled = true
+timezone = "Asia/Shanghai"
+
+[mcp]
+enabled = true
+auto_connect = []
+
+[proactive]
+enabled = true
+default_channel = "telegram"
+default_chat_id = "username"
+
+# 推送间隔（根据 base_score 动态调整，秒）
+tick_interval_s3 = 420
+tick_interval_s2 = 1080
+tick_interval_s1 = 2400
+tick_interval_s0 = 4800
+
+# 静默时段
+quiet_hours_start = 22                  # 静默开始，默认 22 点
+quiet_hours_end = 8                     # 静默结束，默认 8 点
+quiet_hours_drift = true                # false 则无视静默时段，正常推送
+
+# Agent Loop
+proactive_max_steps = 50                # Agent 单轮最大工具调用轮数
+proactive_web_fetch_max_chars = 8000    # web_fetch 工具返回字符上限
+
+[proactive.drift]
+enabled = true
+max_steps = 20
+min_interval_hours = 2
+web_fetch_max_chars = 8000
+
+[dashboard]
+enabled = true
+host = "0.0.0.0"
+port = 2236
+# api_key = "your-secret-key-here"  # 取消注释并修改以启用认证

@@ -1,0 +1,5 @@
+# jieba 中文分词二进制扩展
+src/raven_agent/memory2/ext/libsimple.so binary
+
+# jieba 词典文件 — 不计入语言统计
+src/raven_agent/memory2/ext/dict/*.utf8 linguist-vendored

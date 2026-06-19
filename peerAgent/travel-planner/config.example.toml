@@ -1,0 +1,24 @@
+# Peer Agent 独立配置，不依赖 raven-agent 的其他文件
+
+[llm]
+provider = "deepseek"
+model = "deepseek-v4-pro"
+api_key = ""
+base_url = "https://api.deepseek.com"
+max_tokens = 16384
+
+# 高德地图 MCP（天气、POI 搜索、地理编码）
+[amap]
+server_command = ["uvx", "amap-mcp-server"]
+api_key = ""
+
+# 小红书搜索 MCP
+# search_mcp_home 指向存放小红书 Cookie 的目录，Cookie 生成方式见原项目说明
+[xhs]
+server_command = ["stride28-search-mcp"]
+search_mcp_home = "../../.raven/stride28-search"
+
+[trip_planner]
+max_react_rounds = 50
+max_synthesis_retries = 3
+output_dir = "./outputs"

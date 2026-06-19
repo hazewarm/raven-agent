@@ -1,0 +1,438 @@
+{% extends "base.html" %}
+
+{% block style_vars %}
+<style>
+:root {
+  --color-bg: #f4efe4;
+  --color-surface: #fdfbf7;
+  --color-primary: #1a1a1a;
+  --color-secondary: #6b6459;
+  --color-accent: #b83a2c;
+  --color-text: #2c2822;
+  --color-text-secondary: #7a756b;
+  --color-text-heading: #141210;
+  --color-border: #d9d2c5;
+  --color-shadow: rgba(0,0,0,0.04);
+  --font-heading: 'Noto Serif SC', 'Times New Roman', serif;
+  --font-body: 'Noto Sans SC', 'Helvetica Neue', sans-serif;
+  --font-mono: 'SF Mono', 'Menlo', monospace;
+  --font-size-h1: 3rem;
+  --font-size-h2: 1.5rem;
+  --font-size-h3: 1.125rem;
+  --font-size-body: 1rem;
+  --font-size-small: 0.875rem;
+  --line-height: 1.9;
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 2rem;
+  --space-xl: 3rem;
+  --space-xxl: 5rem;
+  --radius-sm: 2px;
+  --radius-md: 4px;
+  --radius-lg: 0;
+  --transition-fast: 0.25s ease;
+  --transition-normal: 0.4s ease;
+}
+</style>
+{% endblock %}
+
+{% block style_css %}
+<style>
+/* 限制主容器宽度，避免桌面端铺满全屏 */
+main, .container, .max-w-2xl {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+/* 和纸肌理 — 微妙的纤维质感 */
+body {
+  background-color: var(--color-bg);
+  background-image:
+    repeating-linear-gradient(0deg, rgba(180,170,150,0.03) 0px, rgba(180,170,150,0.03) 1px, transparent 1px, transparent 2px),
+    repeating-linear-gradient(90deg, rgba(175,165,145,0.02) 0px, rgba(175,165,145,0.02) 1px, transparent 1px, transparent 3px);
+}
+
+/* 封面 — 日式右竖排：标题在右竖写，信息在左横排 */
+/* ┌────────────────────────────────┐ */
+/* │                                │ */
+/* │  三日深度游 · 自由行  天      │ */
+/* │  💰 CNY 3,000        氣   東  │ */
+/* │                           京  │ */
+/* │                                │ */
+/* └────────────────────────────────┘ */
+.hero {
+  background-color: var(--color-bg);
+  padding: var(--space-xxl) var(--space-lg) var(--space-xl);
+  border-bottom: 1px solid var(--color-border);
+  position: relative;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  grid-template-rows: auto 1fr auto;
+  gap: var(--space-sm) var(--space-lg);
+  align-items: start;
+}
+/* 城市名 — 最右竖排，靠下对齐 */
+.hero h1 {
+  grid-column: 3;
+  grid-row: 1 / 4;
+  font-family: var(--font-heading);
+  font-size: var(--font-size-h1);
+  font-weight: 300;
+  color: var(--color-text-heading);
+  letter-spacing: 0.2em;
+  line-height: 1.1;
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+  margin: 0;
+  align-self: end;
+}
+/* 天气 — 中间竖排，比标题靠上，文字过长时折行 */
+.weather-overview {
+  grid-column: 2;
+  grid-row: 1 / 3;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  font-size: var(--font-size-small);
+  color: var(--color-text-secondary);
+  margin: 0;
+  align-self: end;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-xs);
+  max-height: 24em;
+  overflow-wrap: break-word;
+  word-break: break-all;
+}
+.weather-overview i {
+  color: var(--color-accent);
+  writing-mode: horizontal-tb;
+  text-orientation: mixed;
+}
+/* subtitle / budget — 横排靠左，自上而下 */
+.subtitle {
+  grid-column: 1;
+  grid-row: 1;
+  font-family: var(--font-body);
+  font-size: var(--font-size-small);
+  color: var(--color-text-secondary);
+  letter-spacing: 0.08em;
+  margin: 0;
+  align-self: end;
+}
+.budget-overview {
+  grid-column: 1;
+  grid-row: 2;
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  font-size: var(--font-size-small);
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+.budget-overview i {
+  color: var(--color-accent);
+  width: 1.2em;
+  text-align: center;
+}
+
+/* 每日卡片 — 和風区切り線 */
+.day-card {
+  background: var(--color-surface);
+  margin: var(--space-lg) var(--space-md);
+  padding: var(--space-xl) var(--space-lg);
+  border-left: 2px solid var(--color-accent);
+  box-shadow: 0 1px 3px var(--color-shadow);
+  border-radius: 0;
+}
+.day-card h2 {
+  font-family: var(--font-heading);
+  font-size: var(--font-size-h2);
+  font-weight: 400;
+  color: var(--color-text-heading);
+  margin-bottom: var(--space-sm);
+  letter-spacing: 0.04em;
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-sm);
+}
+.day-card h2::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--color-border);
+}
+.day-theme {
+  font-size: var(--font-size-small);
+  color: var(--color-text-secondary);
+  font-style: normal;
+  margin-bottom: var(--space-lg);
+  letter-spacing: 0.06em;
+  padding-left: var(--space-sm);
+  border-left: 1px solid var(--color-accent);
+}
+.weather-badge {
+  display: inline-block;
+  background: var(--color-bg);
+  color: var(--color-text-secondary);
+  padding: var(--space-xs) var(--space-sm);
+  font-size: var(--font-size-small);
+  border: 1px solid var(--color-border);
+  border-radius: 0;
+  margin-bottom: var(--space-lg);
+}
+
+/* 活动列表 */
+.activity-item {
+  padding: var(--space-md) 0;
+  border-bottom: 1px dashed var(--color-border);
+}
+.activity-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+.activity-item h3 {
+  font-family: var(--font-heading);
+  font-size: var(--font-size-h3);
+  font-weight: 400;
+  color: var(--color-text);
+  margin-bottom: var(--space-xs);
+}
+.activity-order {
+  font-family: var(--font-mono);
+  color: var(--color-accent);
+  font-size: var(--font-size-small);
+  margin-right: var(--space-sm);
+}
+.activity-time {
+  font-family: var(--font-mono);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-small);
+}
+.activity-desc {
+  color: var(--color-text);
+  font-size: var(--font-size-body);
+  line-height: var(--line-height);
+  margin-top: var(--space-xs);
+}
+.activity-location,
+.transport-info,
+.meal-info {
+  font-size: var(--font-size-small);
+  color: var(--color-text-secondary);
+  margin-top: var(--space-xs);
+}
+.activity-location a {
+  color: var(--color-text);
+  text-decoration: none;
+  border-bottom: 1px solid var(--color-accent);
+}
+.day-map {
+  width: 100%;
+  height: 200px;
+  margin-top: var(--space-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+}
+.hotel-info {
+  font-size: var(--font-size-small);
+  color: var(--color-text-secondary);
+  margin-top: var(--space-sm);
+  padding-top: var(--space-sm);
+  border-top: 1px solid var(--color-border);
+}
+
+/* 预算区块 */
+.budget-section {
+  margin: var(--space-xl) var(--space-md);
+}
+.budget-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-md);
+}
+.budget-item {
+  background: var(--color-surface);
+  padding: var(--space-md);
+  border: 1px solid var(--color-border);
+  text-align: center;
+  font-size: var(--font-size-small);
+}
+.budget-total {
+  background: var(--color-bg);
+  padding: var(--space-md);
+  text-align: center;
+  font-family: var(--font-heading);
+  color: var(--color-text-heading);
+  font-size: var(--font-size-body);
+  border-top: 2px solid var(--color-accent);
+  margin-top: var(--space-md);
+}
+
+/* 小红书笔记 */
+.xhs-section,
+.tips-section,
+.emergency-section,
+.packing-section {
+  background: var(--color-surface);
+  margin: var(--space-xl) var(--space-md);
+  padding: var(--space-lg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+}
+.xhs-note {
+  display: flex;
+  gap: var(--space-md);
+  padding-bottom: var(--space-md);
+  margin-bottom: var(--space-md);
+  border-bottom: 1px solid var(--color-border);
+}
+.xhs-note:last-child {
+  border-bottom: none;
+}
+
+/* 列表 */
+.tips-section ul,
+.packing-section ul {
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
+}
+.tips-section li,
+.packing-section li {
+  position: relative;
+  padding-left: 1.6em;
+  margin-bottom: var(--space-sm);
+  font-size: var(--font-size-body);
+  color: var(--color-text);
+  line-height: var(--line-height);
+}
+.tips-section li::before {
+  content: "・";
+  position: absolute;
+  left: 0;
+  color: var(--color-accent);
+  font-weight: 400;
+}
+.packing-section li::before {
+  content: "□";
+  position: absolute;
+  left: 0;
+  color: var(--color-text-secondary);
+  font-size: 0.8em;
+  top: 0.1em;
+}
+
+.emergency-section p {
+  font-size: var(--font-size-body);
+  color: var(--color-text);
+}
+
+/* 页脚 */
+footer {
+  background: var(--color-bg);
+  padding: var(--space-xl) var(--space-lg);
+  text-align: center;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-small);
+  border-top: 1px solid var(--color-border);
+  position: relative;
+}
+
+/* 徽章 */
+.verification-badge.community-match,
+.verification-badge.community-only {
+  display: inline-block;
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-small);
+  border: 1px solid var(--color-border);
+}
+
+/* 装饰线条（header） */
+.hero-decor {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 20px;
+  pointer-events: none;
+}
+.hero-decor svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* 印章装饰（footer） */
+.footer-seal {
+  display: flex;
+  justify-content: center;
+  margin-top: var(--space-md);
+  opacity: 0.7;
+}
+
+/* 响应式微调 */
+@media (max-width: 640px) {
+  .hero {
+    display: block;
+    padding: var(--space-xl) var(--space-md) var(--space-lg);
+  }
+  .hero h1 {
+    writing-mode: horizontal-tb;
+    text-orientation: mixed;
+    font-size: 2rem;
+    letter-spacing: 0.06em;
+    padding-top: 0;
+    padding-bottom: var(--space-sm);
+    margin-bottom: var(--space-sm);
+    border-bottom: 1px solid var(--color-border);
+  }
+  .weather-overview {
+    writing-mode: horizontal-tb;
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding-top: 0;
+    margin-bottom: var(--space-xs);
+  }
+  .weather-overview i {
+    writing-mode: horizontal-tb;
+  }
+  .subtitle { margin-bottom: var(--space-xs); }
+  .budget-overview {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+  }
+  .day-card {
+    margin: var(--space-md) var(--space-sm);
+    padding: var(--space-md);
+  }
+  .budget-grid {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
+{% endblock %}
+
+{% block header_decor %}
+<div class="hero-decor">
+  <svg viewBox="0 0 400 20" preserveAspectRatio="none">
+    <path d="M0,10 Q50,4 100,10 T200,10 T300,10 T400,10" fill="none" stroke="var(--color-text)" stroke-width="0.8" stroke-dasharray="3,4" opacity="0.2"/>
+    <circle cx="370" cy="10" r="3.5" fill="var(--color-accent)" opacity="0.7"/>
+  </svg>
+</div>
+{% endblock %}
+
+{% block footer_decor %}
+<div class="footer-seal">
+  <svg viewBox="0 0 100 100" width="48" height="48">
+    <circle cx="50" cy="50" r="44" fill="none" stroke="var(--color-accent)" stroke-width="2.2"/>
+    <text x="50" y="68" text-anchor="middle" font-size="42" fill="var(--color-accent)" font-family="'Noto Serif SC', serif" font-weight="300">旅</text>
+  </svg>
+</div>
+{% endblock %}

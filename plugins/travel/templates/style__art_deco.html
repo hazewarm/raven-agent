@@ -1,0 +1,490 @@
+{% extends "base.html" %}
+
+{% block style_vars %}
+<style>
+:root {
+/* 核心色彩：黑金配色 */
+--color-bg: #0A0A0A;
+--color-surface: #171717;
+--color-primary: #D4AF37;
+--color-secondary: #B5952F;
+--color-accent: #F3E5AB;
+
+/* 文本色彩：高对比度以保证可读性 */
+--color-text: #EAEAEA;
+--color-text-secondary: #A3A3A3;
+--color-text-heading: #D4AF37;
+
+/* 边框与阴影 */
+--color-border: #D4AF37;
+--color-shadow: rgba(212, 175, 55, 0.15);
+
+/* 字体排版：衬线与无衬线结合 */
+--font-heading: 'Noto Serif SC', 'Playfair Display', serif;
+--font-body: 'Noto Sans SC', 'Helvetica Neue', sans-serif;
+--font-mono: 'Courier New', Courier, monospace;
+
+/* 字体大小 */
+--font-size-h1: 2.5rem;
+--font-size-h2: 1.75rem;
+--font-size-h3: 1.25rem;
+--font-size-body: 1rem;
+--font-size-small: 0.875rem;
+
+/* 行高与间距：几何秩序感 */
+--line-height: 1.6;
+--space-xs: 0.25rem;
+--space-sm: 0.75rem;
+--space-md: 1.25rem;
+--space-lg: 2rem;
+--space-xl: 3rem;
+--space-xxl: 4rem;
+
+/* 圆角：Art Deco 强调锐利直接的几何切割，故摒弃大圆角 */
+--radius-sm: 0px;
+--radius-md: 0px;
+--radius-lg: 0px;
+
+/* 动画过渡 */
+--transition-fast: 0.2s ease-in-out;
+--transition-normal: 0.4s ease-in-out;
+
+}
+</style>
+{% endblock %}
+
+{% block style_css %}
+<style>
+/* 基础重置与全局背景 */
+body {
+background-color: var(--color-bg);
+color: var(--color-text);
+font-family: var(--font-body);
+line-height: var(--line-height);
+/* 隐约的几何大理石/暗纹背景 */
+background-image:
+linear-gradient(var(--color-shadow) 1px, transparent 1px),
+linear-gradient(90deg, var(--color-shadow) 1px, transparent 1px);
+background-size: 40px 40px;
+background-position: center;
+}
+
+/* 标题基础排版：全大写（针对英文部分），宽字距，衬线体 */
+h1, h2, h3, h4, h5, h6 {
+font-family: var(--font-heading);
+color: var(--color-text-heading);
+text-transform: uppercase;
+letter-spacing: 0.15em;
+font-weight: 600;
+}
+
+/* 主容器：限制宽度，增加华丽边框约束 */
+main, .container, .max-w-2xl {
+max-width: 720px;
+margin: 0 auto;
+background-color: var(--color-bg);
+border-left: 2px solid var(--color-border);
+border-right: 2px solid var(--color-border);
+box-shadow: 0 0 40px rgba(0, 0, 0, 0.8);
+position: relative;
+}
+
+/* ----------------------------------
+Hero 区域：放射状金色光线与《了不起的盖茨比》视觉
+----------------------------------- */
+.hero {
+position: relative;
+padding: var(--space-xxl) var(--space-md) var(--space-xl);
+text-align: center;
+background: radial-gradient(ellipse at center bottom, var(--color-surface) 0%, var(--color-bg) 80%);
+border-bottom: 4px double var(--color-border);
+overflow: hidden;
+z-index: 1;
+}
+
+/* 放射状扇形光线背景 */
+.hero::before {
+content: '';
+position: absolute;
+top: -50%; left: -50%; right: -50%; bottom: 0;
+background: repeating-conic-gradient(
+from 270deg at 50% 100%,
+var(--color-shadow) 0deg 3deg,
+transparent 3deg 8deg
+);
+z-index: -1;
+opacity: 0.5;
+pointer-events: none;
+}
+
+.hero h1 {
+font-size: var(--font-size-h1);
+margin-bottom: var(--space-sm);
+text-shadow: 2px 2px 0px #000, -1px -1px 0px var(--color-secondary);
+display: inline-block;
+padding: 0 var(--space-xl) var(--space-xs);
+position: relative;
+border-bottom: 2px solid var(--color-primary);
+}
+
+/* 标题两侧的菱形装饰点 */
+.hero h1::before, .hero h1::after {
+content: '◆';
+position: absolute;
+bottom: -0.65rem;
+color: var(--color-primary);
+font-size: 1rem;
+}
+.hero h1::before { left: 0; }
+.hero h1::after { right: 0; }
+
+.subtitle {
+font-size: var(--font-size-h3);
+color: var(--color-text-secondary);
+letter-spacing: 0.25em;
+margin-bottom: var(--space-lg);
+font-family: var(--font-heading);
+}
+
+/* 概览数据区 */
+.weather-overview, .budget-overview {
+display: inline-flex;
+align-items: center;
+justify-content: center;
+gap: var(--space-sm);
+padding: var(--space-sm) var(--space-md);
+border: 1px solid var(--color-border);
+margin: var(--space-xs);
+background: var(--color-surface);
+font-family: var(--font-heading);
+font-size: var(--font-size-small);
+letter-spacing: 0.1em;
+position: relative;
+}
+/* 双线边框效果 */
+.weather-overview::after, .budget-overview::after {
+content: '';
+position: absolute;
+top: -4px; left: -4px; right: -4px; bottom: -4px;
+border: 1px solid var(--color-shadow);
+pointer-events: none;
+}
+
+/* ----------------------------------
+每日行程卡片：克莱斯勒大厦式的几何边缘
+----------------------------------- */
+.day-card {
+background-color: var(--color-surface);
+margin: var(--space-xl) var(--space-md);
+padding: var(--space-xl) var(--space-md);
+position: relative;
+border: 1px solid var(--color-border);
+z-index: 1;
+}
+
+/* 内框线 */
+.day-card::before {
+content: '';
+position: absolute;
+top: 6px; left: 6px; right: 6px; bottom: 6px;
+border: 1px solid var(--color-border);
+pointer-events: none;
+z-index: -1;
+}
+
+/* 经典 Art Deco 倒角与几何顶部/底部修饰 */
+.day-card::after {
+content: '';
+position: absolute;
+top: -6px; left: -6px; right: -6px; bottom: -6px;
+border-top: 3px solid var(--color-primary);
+border-bottom: 3px solid var(--color-primary);
+pointer-events: none;
+clip-path: polygon(
+15px 0, calc(100% - 15px) 0, 100% 15px,
+100% calc(100% - 15px), calc(100% - 15px) 100%,
+15px 100%, 0 calc(100% - 15px), 0 15px
+);
+}
+
+.day-card h2 {
+font-size: var(--font-size-h2);
+margin-bottom: var(--space-sm);
+display: flex;
+align-items: center;
+justify-content: center;
+gap: var(--space-md);
+text-align: center;
+}
+.day-card h2::before, .day-card h2::after {
+content: '';
+height: 1px;
+width: 30px;
+background-color: var(--color-primary);
+box-shadow: 0 2px 0 var(--color-primary); /* 双线横杠 */
+}
+
+.day-theme {
+text-align: center;
+font-style: italic;
+color: var(--color-accent);
+margin-bottom: var(--space-md);
+letter-spacing: 0.1em;
+}
+
+.weather-badge {
+display: table;
+margin: 0 auto var(--space-lg);
+padding: var(--space-xs) var(--space-md);
+background-color: var(--color-bg);
+border: 1px solid var(--color-border);
+font-size: var(--font-size-small);
+color: var(--color-primary);
+letter-spacing: 0.15em;
+text-transform: uppercase;
+}
+
+/* ----------------------------------
+具体活动项
+----------------------------------- */
+.activity-item {
+padding: var(--space-lg) 0;
+border-top: 1px solid var(--color-shadow);
+position: relative;
+}
+.activity-item:first-of-type { border-top: none; }
+
+.activity-item h3 {
+text-align: left;
+font-size: var(--font-size-h3);
+display: flex;
+align-items: center;
+gap: var(--space-sm);
+margin-bottom: var(--space-xs);
+}
+
+/* 六边形或倒角方块作为序号背景 */
+.activity-order {
+background-color: var(--color-bg);
+color: var(--color-primary);
+border: 1px solid var(--color-primary);
+width: 32px;
+height: 32px;
+display: inline-flex;
+align-items: center;
+justify-content: center;
+font-weight: bold;
+font-family: var(--font-heading);
+/* 钻石形切割 */
+clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+box-shadow: inset 0 0 5px var(--color-shadow);
+}
+
+.activity-time {
+font-family: var(--font-mono);
+color: var(--color-secondary);
+font-size: var(--font-size-small);
+margin-bottom: var(--space-sm);
+display: block;
+letter-spacing: 0.05em;
+padding-left: calc(32px + var(--space-sm));
+}
+
+.activity-desc {
+color: var(--color-text);
+margin-bottom: var(--space-md);
+text-align: justify;
+padding-left: calc(32px + var(--space-sm));
+}
+
+/* 附加信息卡片：交通、餐饮、住宿 */
+.activity-location, .transport-info, .meal-info, .hotel-info {
+font-size: var(--font-size-small);
+color: var(--color-text-secondary);
+margin-top: var(--space-sm);
+margin-left: calc(32px + var(--space-sm));
+display: flex;
+align-items: flex-start;
+gap: var(--space-sm);
+padding: var(--space-sm);
+background-color: var(--color-bg);
+border-left: 2px solid var(--color-primary);
+position: relative;
+}
+/* 添加微小的几何装饰角 */
+.activity-location::after, .transport-info::after, .meal-info::after, .hotel-info::after {
+content: '';
+position: absolute;
+bottom: 0; right: 0;
+width: 8px; height: 8px;
+border-bottom: 1px solid var(--color-primary);
+border-right: 1px solid var(--color-primary);
+}
+
+.activity-location a {
+color: var(--color-primary);
+text-decoration: none;
+transition: color var(--transition-fast);
+border-bottom: 1px solid transparent;
+}
+.activity-location a:hover {
+color: var(--color-accent);
+border-bottom-color: var(--color-accent);
+}
+
+/* 高德地图容器 */
+.day-map {
+height: 240px;
+margin: var(--space-lg) 0 var(--space-lg) calc(32px + var(--space-sm));
+border: 2px solid var(--color-border);
+background: var(--color-surface);
+}
+
+/* ----------------------------------
+周边模块：预算、小红书、贴士等
+----------------------------------- */
+.budget-section, .xhs-section, .tips-section, .emergency-section, .packing-section {
+padding: var(--space-xl) var(--space-md);
+margin: var(--space-xxl) 0;
+border-top: 4px double var(--color-border);
+border-bottom: 4px double var(--color-border);
+background-color: var(--color-surface);
+position: relative;
+}
+/* 模块两端的钻石装饰 */
+.budget-section::before, .xhs-section::before, .tips-section::before, .emergency-section::before, .packing-section::before {
+content: '◆';
+position: absolute;
+top: -12px; left: 50%;
+transform: translateX(-50%);
+color: var(--color-primary);
+background: var(--color-bg);
+padding: 0 var(--space-sm);
+font-size: 1.2rem;
+}
+
+.budget-grid {
+display: grid;
+grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+gap: var(--space-md);
+margin-top: var(--space-md);
+}
+
+.budget-item {
+border: 1px solid var(--color-shadow);
+padding: var(--space-sm);
+text-align: center;
+background-color: var(--color-bg);
+transition: border-color var(--transition-fast);
+}
+.budget-item:hover {
+border-color: var(--color-primary);
+}
+
+.budget-total {
+margin-top: var(--space-lg);
+text-align: right;
+font-size: var(--font-size-h3);
+color: var(--color-primary);
+font-family: var(--font-heading);
+letter-spacing: 0.1em;
+border-top: 1px dashed var(--color-border);
+padding-top: var(--space-sm);
+}
+
+/* 小红书笔记链接卡片 */
+.xhs-note {
+display: block;
+padding: var(--space-md);
+border: 1px solid var(--color-shadow);
+margin-bottom: var(--space-md);
+background: linear-gradient(135deg, var(--color-bg) 0%, var(--color-surface) 100%);
+border-left: 4px solid var(--color-primary);
+text-decoration: none;
+color: var(--color-text);
+transition: all var(--transition-normal);
+position: relative;
+}
+.xhs-note::after {
+content: '↗';
+position: absolute;
+top: var(--space-md); right: var(--space-md);
+color: var(--color-primary);
+font-family: var(--font-mono);
+opacity: 0;
+transform: translate(-5px, 5px);
+transition: all var(--transition-normal);
+}
+.xhs-note:hover {
+border-color: var(--color-primary);
+box-shadow: 0 4px 15px var(--color-shadow);
+transform: translateY(-2px);
+}
+.xhs-note:hover::after {
+opacity: 1;
+transform: translate(0, 0);
+}
+
+/* 列表样式 */
+.tips-section ul, .packing-section ul {
+list-style: none;
+padding-left: 0;
+}
+.tips-section li, .packing-section li {
+position: relative;
+padding-left: var(--space-xl);
+margin-bottom: var(--space-sm);
+color: var(--color-text-secondary);
+line-height: 1.8;
+}
+/* 放射状/几何小图标作为列表项符号 */
+.tips-section li::before, .packing-section li::before {
+content: '⟡';
+position: absolute;
+left: var(--space-sm);
+color: var(--color-primary);
+font-size: 1.2em;
+line-height: 1.5;
+}
+
+/* 紧急信息区强化 */
+.emergency-section {
+background-color: #1A0D0D; /* 深酒红/黑底 */
+border-color: #A32A2A;
+}
+.emergency-section h2 { color: #D64A4A; }
+.emergency-section::before { color: #D64A4A; }
+
+/* 认证徽章 */
+.verification-badge {
+display: inline-flex;
+align-items: center;
+gap: var(--space-xs);
+padding: var(--space-xs) var(--space-sm);
+font-size: var(--font-size-small);
+font-family: var(--font-heading);
+border: 1px solid var(--color-primary);
+background: var(--color-bg);
+color: var(--color-primary);
+margin-top: var(--space-sm);
+letter-spacing: 0.1em;
+}
+.verification-badge.community-match { border-color: var(--color-primary); box-shadow: inset 0 0 4px var(--color-shadow); }
+.verification-badge.community-only { border-color: var(--color-secondary); opacity: 0.8; }
+
+/* 页脚 */
+footer {
+text-align: center;
+padding: var(--space-xl) var(--space-md);
+color: var(--color-text-secondary);
+font-family: var(--font-heading);
+letter-spacing: 0.2em;
+position: relative;
+font-size: var(--font-size-small);
+}
+</style>
+{% endblock %}
+
+{% block header_decor %}{% endblock %}
+
+{% block footer_decor %}{% endblock %}

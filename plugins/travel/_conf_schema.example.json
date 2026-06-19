@@ -1,0 +1,26 @@
+{
+    "amap_js_key": {
+        "default": "",
+        "description": "高德地图 JS API Key，用于网页内嵌交互地图（render_mode=dynamic 时使用）。留空则不启用交互地图功能。"
+    },
+    "amap_security_code": {
+        "default": "",
+        "description": "高德地图安全密钥（jscode）。2021年12月2日后申请的 Key 必须配置，否则地图白色、标注异常。在 https://console.amap.com/ 应用管理→安全设置 中获取。"
+    },
+    "amap_web_service_key": {
+        "default": "",
+        "description": "高德 Web 服务 Key（render_mode=static 时必需）。与 JS API Key 不同，需在高德控制台创建「Web 服务」类型的 Key。"
+    },
+    "default_style": {
+        "default": "art_deco",
+        "description": "默认渲染风格 slug，当 LLM 未指定风格时使用。"
+    },
+    "render_mode": {
+        "default": "static",
+        "description": "地图渲染模式：'static' 使用高德静态地图 REST API（生成 <img> 标签，离线文件可用）；'dynamic' 使用高德 JS API v2.0 交互地图（需 Dashboard 公网可达，且域名在高德白名单中）。"
+    },
+    "dashboard_base_url": {
+        "default": "",
+        "description": "Dashboard 的公网可达 URL（render_mode=dynamic 时必须配置）。例如 'https://abc.ngrok-free.app' 或 'https://raven.example.com'。留空时 dynamic 模式下会提示用户配置。"
+    }
+}

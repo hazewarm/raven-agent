@@ -1,0 +1,486 @@
+{% extends "base.html" %}
+
+{% block style_vars %}
+<style>
+  :root {
+    /* 颜色 - 陈年纸张与印刷色 */
+    --color-bg: #f5f0e3;
+    --color-surface: #fdfaf2;
+    --color-primary: #5c3b2e;
+    --color-secondary: #9b7b4a;
+    --color-accent: #a6342e;
+    --color-text: #3b2c24;
+    --color-text-secondary: #6e5e4f;
+    --color-text-heading: #3b2c24;
+    --color-border: #d7c8a8;
+    --color-shadow: rgba(92, 59, 46, 0.12);
+
+    /* 字体 - 古典衬线为主 */
+    --font-heading: 'Noto Serif SC', 'Baskerville', 'Palatino Linotype', 'Book Antiqua', serif;
+    --font-body: 'Noto Serif SC', 'Georgia', 'Times New Roman', serif;
+    --font-mono: 'Noto Sans SC', 'Courier New', monospace;
+
+    /* 字号 */
+    --font-size-h1: 2rem;
+    --font-size-h2: 1.5rem;
+    --font-size-h3: 1.25rem;
+    --font-size-body: 1rem;
+    --font-size-small: 0.875rem;
+
+    --line-height: 1.7;
+
+    /* 间距 */
+    --space-xs: 0.25rem;
+    --space-sm: 0.5rem;
+    --space-md: 1rem;
+    --space-lg: 1.5rem;
+    --space-xl: 2rem;
+    --space-xxl: 3rem;
+
+    /* 圆角 - 极轻微 */
+    --radius-sm: 2px;
+    --radius-md: 4px;
+    --radius-lg: 8px;
+
+    /* 过渡 */
+    --transition-fast: all 0.15s ease;
+    --transition-normal: all 0.3s ease;
+  }
+</style>
+{% endblock %}
+
+{% block style_css %}
+<style>
+  /* ===== 限制主容器宽度，避免桌面端铺满全屏 ===== */
+  main, .container, .max-w-2xl {
+    max-width: 720px;
+    margin: 0 auto;
+  }
+
+  /* ===== 全局纸张纹理 ===== */
+  .hero,
+  .day-card,
+  .budget-section,
+  .xhs-section,
+  .tips-section,
+  .emergency-section,
+  .packing-section {
+    background-color: var(--color-bg);
+    background-image:
+      repeating-linear-gradient(0deg, rgba(180,160,120,0.08) 0px, rgba(180,160,120,0.08) 1px, transparent 1px, transparent 3px),
+      repeating-linear-gradient(90deg, rgba(180,160,120,0.05) 0px, rgba(180,160,120,0.05) 1px, transparent 1px, transparent 3px);
+  }
+
+  /* 表面卡片单独提亮 */
+  .day-card,
+  .xhs-note {
+    background-color: var(--color-surface);
+  }
+
+  /* ===== Hero 封面区 ===== */
+  .hero {
+    padding: var(--space-xl) var(--space-lg);
+    text-align: center;
+    border-bottom: 4px double var(--color-primary);
+    position: relative;
+  }
+
+  .hero h1 {
+    font-family: var(--font-heading);
+    font-size: var(--font-size-h1);
+    color: var(--color-text-heading);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: var(--space-xs);
+    line-height: 1.3;
+  }
+
+  .hero .subtitle {
+    font-family: var(--font-body);
+    font-style: italic;
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-small);
+    letter-spacing: 0.05em;
+    margin-bottom: var(--space-md);
+  }
+
+  .hero .weather-overview,
+  .hero .budget-overview {
+    display: inline-block;
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    padding: var(--space-xs) var(--space-md);
+    margin: var(--space-sm) var(--space-xs);
+    font-size: var(--font-size-small);
+    color: var(--color-text);
+    box-shadow: 1px 1px 4px var(--color-shadow);
+    font-family: var(--font-mono);
+  }
+
+  .hero .weather-overview strong,
+  .hero .budget-overview strong {
+    color: var(--color-accent);
+    font-weight: 700;
+  }
+
+  /* 装饰纹样 */
+  .hero-ornament {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: var(--space-md) 0 var(--space-sm);
+    gap: var(--space-sm);
+  }
+
+  .ornament-line {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--color-border), transparent);
+  }
+
+  .ornament-icon {
+    color: var(--color-accent);
+    font-size: 1.3rem;
+    opacity: 0.7;
+  }
+
+  /* ===== 每日行程卡片 ===== */
+  .day-card {
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: var(--space-lg);
+    margin: var(--space-lg) var(--space-sm);
+    box-shadow: 3px 3px 8px var(--color-shadow);
+    position: relative;
+  }
+
+  .day-card h2 {
+    font-family: var(--font-heading);
+    font-size: var(--font-size-h2);
+    color: var(--color-primary);
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: var(--space-xs);
+    margin-bottom: var(--space-sm);
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-sm);
+  }
+
+  .day-card .day-theme {
+    font-family: var(--font-body);
+    font-style: italic;
+    font-size: var(--font-size-small);
+    color: var(--color-text-secondary);
+    margin-left: auto;
+    font-weight: 400;
+  }
+
+  .weather-badge {
+    display: inline-block;
+    background-color: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    padding: 2px 10px;
+    font-size: var(--font-size-small);
+    color: var(--color-text-secondary);
+    font-family: var(--font-mono);
+    margin-bottom: var(--space-md);
+  }
+
+  /* 活动项 - 经典引文风格 */
+  .activity-item {
+    border-left: 3px solid var(--color-accent);
+    padding-left: var(--space-md);
+    margin-bottom: var(--space-lg);
+    background: rgba(253, 250, 242, 0.5);
+  }
+
+  .activity-item h3 {
+    font-family: var(--font-heading);
+    font-size: var(--font-size-h3);
+    color: var(--color-text-heading);
+    margin-bottom: var(--space-xs);
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+  }
+
+  .activity-order {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--color-accent);
+    color: #fff;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    font-family: var(--font-mono);
+    margin-right: var(--space-xs);
+  }
+
+  .activity-time {
+    font-size: var(--font-size-small);
+    color: var(--color-text-secondary);
+    font-family: var(--font-mono);
+    margin-bottom: var(--space-xs);
+  }
+
+  .activity-desc {
+    font-size: var(--font-size-body);
+    color: var(--color-text);
+    line-height: var(--line-height);
+    margin-bottom: var(--space-sm);
+  }
+
+  .activity-location a {
+    color: var(--color-secondary);
+    text-decoration: underline;
+    font-weight: 600;
+    transition: var(--transition-fast);
+  }
+
+  .activity-location a:hover {
+    color: var(--color-accent);
+  }
+
+  .transport-info,
+  .meal-info {
+    font-size: var(--font-size-small);
+    color: var(--color-text-secondary);
+    margin-top: var(--space-xs);
+  }
+
+  .meal-info {
+    display: inline-block;
+    background-color: var(--color-secondary);
+    color: #fff;
+    padding: 2px 8px;
+    border-radius: var(--radius-sm);
+    font-family: var(--font-mono);
+    margin-right: var(--space-sm);
+  }
+
+  /* 地图卡片 - 严禁 filter / opacity / mix-blend-mode / backdrop-filter */
+  .day-map {
+    height: 220px;
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    margin-top: var(--space-md);
+    background: var(--color-bg);
+    overflow: hidden;
+  }
+
+  .hotel-info {
+    background-color: rgba(245,240,227,0.7);
+    border: 1px dashed var(--color-border);
+    padding: var(--space-md);
+    margin-top: var(--space-md);
+    font-size: var(--font-size-small);
+    border-radius: var(--radius-sm);
+    color: var(--color-text);
+  }
+
+  /* ===== 预算明细 ===== */
+  .budget-section {
+    padding: var(--space-lg);
+    margin: var(--space-lg) var(--space-sm);
+    border-top: 3px double var(--color-primary);
+    border-bottom: 3px double var(--color-primary);
+  }
+
+  .budget-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-xs);
+  }
+
+  .budget-item {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    border-bottom: 1px dotted var(--color-border);
+    padding: var(--space-xs) 0;
+    font-family: var(--font-body);
+    font-size: var(--font-size-body);
+  }
+
+  .budget-item .budget-amount {
+    margin-left: auto;
+  }
+
+  .budget-total {
+    display: flex;
+    justify-content: space-between;
+    font-weight: 700;
+    font-size: var(--font-size-h3);
+    margin-top: var(--space-md);
+    padding-top: var(--space-sm);
+    border-top: 2px solid var(--color-primary);
+    color: var(--color-primary);
+  }
+
+  /* ===== 小红书攻略 ===== */
+  .xhs-section {
+    padding: var(--space-lg);
+    margin: var(--space-lg) var(--space-sm);
+  }
+
+  .xhs-note {
+    border-left: 5px solid var(--color-accent);
+    padding: var(--space-md);
+    margin-bottom: var(--space-md);
+    box-shadow: 2px 2px 6px var(--color-shadow);
+    background-color: var(--color-surface);
+  }
+
+  /* ===== 旅行贴士 & 紧急信息 & 行李清单 ===== */
+  .tips-section,
+  .emergency-section,
+  .packing-section {
+    padding: var(--space-lg);
+    margin: var(--space-lg) var(--space-sm);
+    border: 1px solid var(--color-border);
+  }
+
+  .tips-section ul,
+  .emergency-section ul,
+  .packing-section ul {
+    list-style: none;
+    padding-left: 0;
+  }
+
+  .tips-section li,
+  .emergency-section li,
+  .packing-section li {
+    position: relative;
+    padding-left: 1.6em;
+    margin-bottom: var(--space-sm);
+    line-height: var(--line-height);
+    color: var(--color-text);
+  }
+
+  .tips-section li::before {
+    content: "❧";
+    position: absolute;
+    left: 0;
+    color: var(--color-accent);
+    font-weight: bold;
+  }
+
+  .emergency-section li::before {
+    content: "⚠";
+    position: absolute;
+    left: 0;
+    color: var(--color-accent);
+  }
+
+  .packing-section li::before {
+    content: "☐";
+    position: absolute;
+    left: 0;
+    color: var(--color-primary);
+    font-size: 1.1em;
+  }
+
+  /* 紧急信息强调 */
+  .emergency-section {
+    background-color: #f9f2ef;
+    border-color: var(--color-accent);
+  }
+
+  /* ===== 页脚装饰 ===== */
+  footer {
+    text-align: center;
+    padding: var(--space-xl) var(--space-md);
+    font-size: var(--font-size-small);
+    color: var(--color-text-secondary);
+    border-top: 2px solid var(--color-border);
+    background-color: var(--color-bg);
+    margin-top: var(--space-xl);
+  }
+
+  .footer-ornament {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: var(--space-md);
+    gap: var(--space-sm);
+  }
+
+  .footer-line {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--color-border), transparent);
+  }
+
+  /* ===== 可信度徽章 - 复古印章 ===== */
+  .verification-badge.community-match,
+  .verification-badge.community-only {
+    display: inline-block;
+    transform: rotate(-2deg);
+    border: 2px solid var(--color-accent);
+    padding: 0.2em 0.8em;
+    border-radius: 999px;
+    color: var(--color-accent);
+    font-family: var(--font-heading);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 700;
+    opacity: 0.85;
+    background: transparent;
+    margin: 0.2em;
+  }
+
+  .verification-badge.community-only {
+    border-color: var(--color-secondary);
+    color: var(--color-secondary);
+  }
+
+  /* ===== 响应式微调 ===== */
+  @media (max-width: 672px) {
+    :root {
+      --font-size-h1: 1.6rem;
+      --font-size-h2: 1.3rem;
+      --font-size-h3: 1.1rem;
+    }
+    .hero {
+      padding: var(--space-lg) var(--space-md);
+    }
+    .day-card {
+      padding: var(--space-md);
+    }
+  }
+
+  /* 确保链接、按钮等保有复古韵味 */
+  .xhs-note a,
+  footer a {
+    color: var(--color-secondary);
+    text-decoration: underline;
+    transition: var(--transition-fast);
+  }
+  .xhs-note a:hover,
+  footer a:hover {
+    color: var(--color-accent);
+  }
+</style>
+{% endblock %}
+
+{% block header_decor %}
+<div class="hero-ornament">
+  <span class="ornament-line"></span>
+  <span class="ornament-icon">❦</span>
+  <span class="ornament-line"></span>
+</div>
+{% endblock %}
+
+{% block footer_decor %}
+<div class="footer-ornament">
+  <span class="footer-line"></span>
+  <span class="ornament-icon" style="font-size:1rem;">❧</span>
+  <span class="footer-line"></span>
+</div>
+{% endblock %}

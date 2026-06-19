@@ -1,0 +1,22 @@
+[project]
+name = "travel-planner"
+version = "1.0.0"
+description = "5-Agent 旅行规划流水线 —— raven-agent Peer Agent"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.30.0",
+    "httpx>=0.28.0",
+    "openai>=1.60.0",
+    "pydantic>=2.10.0",
+    "fastmcp[client]>=2.0.0",
+
+]
+
+[project.scripts]
+server = "server:app"
+
+[tool.uv]
+# Peer Agent 由 raven-agent 的 ProcessManager 通过
+#   uv run python -m server
+# 方式冷启动，因此需要 uv 管理依赖

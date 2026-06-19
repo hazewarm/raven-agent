@@ -1,0 +1,784 @@
+{% extends "base.html" %}
+
+{% block style_vars %}
+<style>
+:root {
+    /* 构成主义配色 — 红、黑、白为主 */
+    --color-bg: #f0efe7;
+    --color-surface: #fafaf7;
+    --color-primary: #c41230;
+    --color-secondary: #1a1a1a;
+    --color-accent: #e0dcd3;
+    --color-text: #1a1a1a;
+    --color-text-secondary: #4a4a4a;
+    --color-text-heading: #000000;
+    --color-border: #1a1a1a;
+    --color-shadow: #1a1a1a;
+
+    /* 构成主义倾向无衬线字体，体现工业与现代感 */
+    --font-heading: 'Noto Sans SC', sans-serif;
+    --font-body: 'Noto Sans SC', sans-serif;
+    --font-mono: 'Courier New', 'Noto Sans SC', monospace;
+
+    /* 大胆的字号层级 */
+    --font-size-h1: 2.6rem;
+    --font-size-h2: 1.6rem;
+    --font-size-h3: 1.15rem;
+    --font-size-body: 0.95rem;
+    --font-size-small: 0.8rem;
+    --line-height: 1.5;
+
+    /* 构成主义使用锐利直角，无圆角 */
+    --radius-sm: 0px;
+    --radius-md: 0px;
+    --radius-lg: 0px;
+
+    /* 间距 */
+    --space-xs: 0.25rem;
+    --space-sm: 0.5rem;
+    --space-md: 1rem;
+    --space-lg: 1.5rem;
+    --space-xl: 2rem;
+    --space-xxl: 3rem;
+
+    /* 过渡 — 快速利落 */
+    --transition-fast: 0.12s ease-out;
+    --transition-normal: 0.22s ease-out;
+}
+</style>
+{% endblock %}
+
+{% block style_css %}
+<style>
+/* ========== 容器宽度约束 ========== */
+main, .container, .max-w-2xl {
+    max-width: 720px;
+    margin: 0 auto;
+}
+
+/* ========== 页面背景（网格纹理模拟构成主义网格系统） ========== */
+body {
+    background-color: var(--color-bg);
+    background-image:
+        linear-gradient(rgba(0,0,0,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,0,0,0.025) 1px, transparent 1px);
+    background-size: 24px 24px;
+    background-position: -1px -1px;
+}
+
+/* ========== Hero 封面区 ========== */
+.hero {
+    position: relative;
+    background-color: #fdfdfb;
+    overflow: hidden;
+    border: 3px solid var(--color-secondary);
+    margin-bottom: var(--space-lg);
+    padding: var(--space-xl) var(--space-lg);
+    isolation: isolate;
+}
+/* 右侧红色斜向色块 */
+.hero::before {
+    content: '';
+    position: absolute;
+    top: -8%;
+    right: -6%;
+    width: 42%;
+    height: 116%;
+    background-color: var(--color-primary);
+    transform: skewX(-7deg);
+    z-index: 0;
+    opacity: 0.92;
+}
+/* 左上角黑色三角装饰 */
+.hero::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 60px 60px 0 0;
+    border-color: var(--color-secondary) transparent transparent transparent;
+    z-index: 2;
+}
+
+/* Hero 内文字层 */
+.hero h1 {
+    position: relative;
+    z-index: 1;
+    font-family: var(--font-heading);
+    font-size: var(--font-size-h1);
+    font-weight: 900;
+    color: var(--color-text-heading);
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    line-height: 1.1;
+    margin: 0 0 var(--space-sm) 0;
+    transform: skewX(-3deg);
+    text-shadow: 3px 3px 0 rgba(196,18,48,0.18);
+}
+.hero .subtitle {
+    position: relative;
+    z-index: 1;
+    font-family: var(--font-mono);
+    font-size: var(--font-size-small);
+    color: var(--color-text-secondary);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: var(--space-md);
+    padding-left: var(--space-md);
+    border-left: 4px solid var(--color-primary);
+}
+.hero .weather-overview,
+.hero .budget-overview {
+    position: relative;
+    z-index: 1;
+    display: inline-block;
+    background: var(--color-surface);
+    border: 2px solid var(--color-secondary);
+    padding: var(--space-sm) var(--space-md);
+    margin: var(--space-xs) var(--space-sm) var(--space-xs) 0;
+    font-family: var(--font-mono);
+    font-size: var(--font-size-small);
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--color-text);
+    text-transform: uppercase;
+}
+.hero .budget-overview {
+    background: var(--color-secondary);
+    color: #fdfdfb;
+    border-color: var(--color-secondary);
+}
+
+/* ========== Header 装饰容器 ========== */
+.hero-decor-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    pointer-events: none;
+}
+
+/* ========== Day Card 每日行程卡片 ========== */
+.day-card {
+    position: relative;
+    background: var(--color-surface);
+    border: 3px solid var(--color-secondary);
+    margin-bottom: var(--space-lg);
+    padding: var(--space-lg);
+    overflow: hidden;
+    isolation: isolate;
+}
+/* 左侧粗工业边框 */
+.day-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 6px;
+    height: 100%;
+    background: var(--color-primary);
+    z-index: 1;
+}
+/* 右下角斜切装饰 */
+.day-card::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 40px;
+    height: 40px;
+    background: var(--color-secondary);
+    clip-path: polygon(100% 0, 0 100%, 100% 100%);
+    z-index: 0;
+}
+.day-card h2 {
+    position: relative;
+    z-index: 1;
+    font-family: var(--font-heading);
+    font-size: var(--font-size-h2);
+    font-weight: 900;
+    color: var(--color-text-heading);
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    margin: 0 0 var(--space-xs) 0;
+    transform: skewX(-2deg);
+    display: inline-block;
+    border-bottom: 4px solid var(--color-primary);
+    padding-bottom: var(--space-xs);
+}
+.day-card .day-theme {
+    position: relative;
+    z-index: 1;
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: var(--font-size-small);
+    font-weight: 700;
+    color: var(--color-primary);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-bottom: var(--space-md);
+    padding: 2px 8px;
+    border: 2px solid var(--color-primary);
+}
+.day-card .weather-badge {
+    position: relative;
+    z-index: 1;
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: var(--font-size-small);
+    color: var(--color-text-secondary);
+    background: var(--color-accent);
+    padding: 3px 10px;
+    margin-left: var(--space-sm);
+    border-left: 3px solid var(--color-secondary);
+}
+
+/* ========== Activity Item 活动项 ========== */
+.activity-item {
+    position: relative;
+    z-index: 1;
+    padding: var(--space-md) 0 var(--space-md) var(--space-lg);
+    margin: var(--space-sm) 0;
+    border-left: 3px solid var(--color-accent);
+    transition: border-color var(--transition-fast);
+}
+.activity-item:hover {
+    border-left-color: var(--color-primary);
+}
+.activity-item h3 {
+    font-family: var(--font-heading);
+    font-size: var(--font-size-h3);
+    font-weight: 800;
+    color: var(--color-text-heading);
+    margin: 0 0 var(--space-xs) 0;
+    letter-spacing: 0.02em;
+}
+.activity-item .activity-order {
+    position: absolute;
+    left: -20px;
+    top: var(--space-md);
+    width: 28px;
+    height: 28px;
+    background: var(--color-secondary);
+    color: #fdfdfb;
+    font-family: var(--font-mono);
+    font-size: var(--font-size-small);
+    font-weight: 900;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+.activity-item .activity-time {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-small);
+    font-weight: 700;
+    color: var(--color-primary);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-bottom: var(--space-xs);
+}
+.activity-item .activity-desc {
+    font-family: var(--font-body);
+    font-size: var(--font-size-body);
+    color: var(--color-text);
+    line-height: var(--line-height);
+    margin-bottom: var(--space-sm);
+}
+.activity-item .activity-location a {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-small);
+    color: var(--color-secondary);
+    text-decoration: none;
+    border-bottom: 2px solid var(--color-primary);
+    padding-bottom: 1px;
+    transition: color var(--transition-fast), border-color var(--transition-fast);
+}
+.activity-item .activity-location a:hover {
+    color: var(--color-primary);
+    border-bottom-color: var(--color-secondary);
+}
+.activity-item .transport-info,
+.activity-item .meal-info {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-small);
+    color: var(--color-text-secondary);
+    letter-spacing: 0.03em;
+    margin-top: var(--space-xs);
+    padding-left: var(--space-md);
+    border-left: 2px solid var(--color-accent);
+}
+
+/* ========== 高德地图容器 ========== */
+.day-map {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    height: 240px;
+    margin-top: var(--space-md);
+    border: 3px solid var(--color-secondary);
+    /* 不对 .day-map 使用 filter/opacity/mix-blend-mode/backdrop-filter */
+}
+
+/* ========== 酒店信息 ========== */
+.hotel-info {
+    position: relative;
+    z-index: 1;
+    margin-top: var(--space-md);
+    padding: var(--space-md);
+    background: var(--color-accent);
+    border-left: 6px solid var(--color-primary);
+    font-family: var(--font-body);
+    font-size: var(--font-size-body);
+    color: var(--color-text);
+}
+
+/* ========== Budget Section 预算明细 ========== */
+.budget-section {
+    position: relative;
+    background: var(--color-surface);
+    border: 3px solid var(--color-secondary);
+    margin-bottom: var(--space-lg);
+    padding: var(--space-lg);
+    overflow: hidden;
+    isolation: isolate;
+}
+.budget-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 50px;
+    height: 50px;
+    background: var(--color-primary);
+    clip-path: polygon(100% 0, 0 0, 100% 100%);
+    z-index: 0;
+}
+.budget-section h2 {
+    position: relative;
+    z-index: 1;
+    font-family: var(--font-heading);
+    font-size: var(--font-size-h2);
+    font-weight: 900;
+    color: var(--color-text-heading);
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    margin: 0 0 var(--space-md) 0;
+    transform: skewX(-2deg);
+    display: inline-block;
+    border-bottom: 4px solid var(--color-primary);
+    padding-bottom: var(--space-xs);
+}
+.budget-grid {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+}
+.budget-item {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    padding: var(--space-sm) var(--space-md);
+    border-bottom: 2px solid var(--color-accent);
+    font-family: var(--font-mono);
+    font-size: var(--font-size-small);
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    color: var(--color-text);
+    text-transform: uppercase;
+    transition: background var(--transition-fast);
+}
+.budget-item .budget-amount {
+    margin-left: auto;
+}
+
+.budget-item:hover {
+    background: rgba(196,18,48,0.04);
+}
+.budget-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-md);
+    margin-top: var(--space-sm);
+    background: var(--color-secondary);
+    color: #fdfdfb;
+    font-family: var(--font-heading);
+    font-size: var(--font-size-h3);
+    font-weight: 900;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    position: relative;
+    z-index: 1;
+}
+.budget-total::after {
+    content: '▲';
+    position: absolute;
+    right: var(--space-md);
+    font-size: 0.7rem;
+    opacity: 0.7;
+}
+
+/* ========== 小红书攻略区 ========== */
+.xhs-section {
+    position: relative;
+    background: var(--color-surface);
+    border: 3px solid var(--color-secondary);
+    margin-bottom: var(--space-lg);
+    padding: var(--space-lg);
+    overflow: hidden;
+    isolation: isolate;
+}
+.xhs-section::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: repeating-linear-gradient(
+        90deg,
+        var(--color-primary) 0px,
+        var(--color-primary) 20px,
+        var(--color-secondary) 20px,
+        var(--color-secondary) 28px
+    );
+    z-index: 1;
+}
+.xhs-section h2 {
+    position: relative;
+    z-index: 1;
+    font-family: var(--font-heading);
+    font-size: var(--font-size-h2);
+    font-weight: 900;
+    color: var(--color-text-heading);
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    margin: 0 0 var(--space-md) 0;
+    transform: skewX(-2deg);
+    display: inline-block;
+    border-bottom: 4px solid var(--color-primary);
+    padding-bottom: var(--space-xs);
+}
+.xhs-note {
+    position: relative;
+    z-index: 1;
+    padding: var(--space-md);
+    margin-bottom: var(--space-md);
+    border: 2px solid var(--color-secondary);
+    background: #fdfdfb;
+    font-family: var(--font-body);
+    font-size: var(--font-size-body);
+    color: var(--color-text);
+    line-height: var(--line-height);
+    transition: border-color var(--transition-fast);
+}
+.xhs-note:hover {
+    border-color: var(--color-primary);
+}
+.xhs-note::before {
+    content: '◆';
+    color: var(--color-primary);
+    font-size: 0.6rem;
+    margin-right: var(--space-sm);
+    vertical-align: middle;
+}
+
+/* ========== 旅行贴士区 ========== */
+.tips-section {
+    position: relative;
+    background: var(--color-surface);
+    border: 3px solid var(--color-secondary);
+    margin-bottom: var(--space-lg);
+    padding: var(--space-lg);
+    overflow: hidden;
+    isolation: isolate;
+}
+.tips-section h2 {
+    position: relative;
+    z-index: 1;
+    font-family: var(--font-heading);
+    font-size: var(--font-size-h2);
+    font-weight: 900;
+    color: var(--color-text-heading);
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    margin: 0 0 var(--space-md) 0;
+    transform: skewX(-2deg);
+    display: inline-block;
+    border-bottom: 4px solid var(--color-primary);
+    padding-bottom: var(--space-xs);
+}
+.tips-section ul {
+    position: relative;
+    z-index: 1;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.tips-section ul li {
+    position: relative;
+    padding: var(--space-sm) 0 var(--space-sm) var(--space-xl);
+    margin-bottom: var(--space-xs);
+    border-bottom: 1px solid var(--color-accent);
+    font-family: var(--font-body);
+    font-size: var(--font-size-body);
+    color: var(--color-text);
+    line-height: var(--line-height);
+}
+.tips-section ul li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 10px;
+    height: 10px;
+    background: var(--color-primary);
+}
+.tips-section::after {
+    content: '';
+    position: absolute;
+    top: -10px;
+    right: 30px;
+    width: 20px;
+    height: 20px;
+    background: var(--color-secondary);
+    transform: rotate(45deg);
+    z-index: 0;
+}
+
+/* ========== 紧急信息区 ========== */
+.emergency-section {
+    position: relative;
+    background: #fdfdfb;
+    border: 3px solid var(--color-primary);
+    margin-bottom: var(--space-lg);
+    padding: var(--space-lg);
+    overflow: hidden;
+    isolation: isolate;
+}
+.emergency-section::before {
+    content: '!';
+    position: absolute;
+    top: var(--space-md);
+    right: var(--space-md);
+    font-family: var(--font-heading);
+    font-size: 4rem;
+    font-weight: 900;
+    color: rgba(196,18,48,0.08);
+    z-index: 0;
+    line-height: 1;
+}
+.emergency-section h2 {
+    position: relative;
+    z-index: 1;
+    font-family: var(--font-heading);
+    font-size: var(--font-size-h2);
+    font-weight: 900;
+    color: var(--color-primary);
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    margin: 0 0 var(--space-md) 0;
+    display: inline-block;
+    border-bottom: 4px solid var(--color-secondary);
+    padding-bottom: var(--space-xs);
+}
+
+/* ========== 行李清单区 ========== */
+.packing-section {
+    position: relative;
+    background: var(--color-surface);
+    border: 3px solid var(--color-secondary);
+    margin-bottom: var(--space-lg);
+    padding: var(--space-lg);
+    overflow: hidden;
+    isolation: isolate;
+}
+.packing-section h2 {
+    position: relative;
+    z-index: 1;
+    font-family: var(--font-heading);
+    font-size: var(--font-size-h2);
+    font-weight: 900;
+    color: var(--color-text-heading);
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    margin: 0 0 var(--space-md) 0;
+    transform: skewX(-2deg);
+    display: inline-block;
+    border-bottom: 4px solid var(--color-primary);
+    padding-bottom: var(--space-xs);
+}
+/* 对角线装饰条 */
+.packing-section::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: var(--color-primary);
+    transform: skewX(-45deg);
+    transform-origin: left bottom;
+    z-index: 0;
+    opacity: 0.5;
+}
+
+/* ========== 数据可信度徽章 ========== */
+.verification-badge.community-match {
+    background: var(--color-secondary);
+    color: #fdfdfb;
+    font-family: var(--font-mono);
+    font-size: var(--font-size-small);
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    padding: var(--space-xs) var(--space-md);
+    border: 2px solid var(--color-secondary);
+    text-transform: uppercase;
+}
+.verification-badge.community-only {
+    background: transparent;
+    color: var(--color-primary);
+    font-family: var(--font-mono);
+    font-size: var(--font-size-small);
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    padding: var(--space-xs) var(--space-md);
+    border: 2px solid var(--color-primary);
+    text-transform: uppercase;
+}
+
+/* ========== Footer ========== */
+footer {
+    position: relative;
+    background: var(--color-secondary);
+    color: #d4d0c8;
+    padding: var(--space-lg);
+    margin-top: var(--space-xl);
+    font-family: var(--font-mono);
+    font-size: var(--font-size-small);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    text-align: center;
+    border-top: 6px solid var(--color-primary);
+    overflow: hidden;
+    isolation: isolate;
+}
+footer a {
+    color: #fdfdfb;
+    text-decoration: none;
+    border-bottom: 2px solid var(--color-primary);
+    transition: color var(--transition-fast);
+}
+footer a:hover {
+    color: #ff6b6b;
+}
+
+/* ========== Footer 装饰容器 ========== */
+.footer-decor-layer {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    pointer-events: none;
+}
+
+/* ========== 响应式微调 ========== */
+@media (max-width: 640px) {
+    .hero {
+        padding: var(--space-lg) var(--space-md);
+        border-width: 2px;
+    }
+    .hero h1 {
+        font-size: 1.8rem;
+        transform: skewX(-2deg);
+    }
+    .hero::before {
+        width: 35%;
+        right: -8%;
+        transform: skewX(-5deg);
+    }
+    .hero::after {
+        border-width: 40px 40px 0 0;
+    }
+    .day-card {
+        padding: var(--space-md);
+        border-width: 2px;
+    }
+    .day-card::before {
+        width: 4px;
+    }
+    .day-card h2 {
+        font-size: 1.3rem;
+    }
+    .budget-section,
+    .xhs-section,
+    .tips-section,
+    .emergency-section,
+    .packing-section {
+        padding: var(--space-md);
+        border-width: 2px;
+    }
+    .activity-item {
+        padding-left: var(--space-md);
+    }
+    .activity-item .activity-order {
+        left: -16px;
+        width: 22px;
+        height: 22px;
+        font-size: 0.7rem;
+    }
+    .day-map {
+        height: 180px;
+        border-width: 2px;
+    }
+}
+</style>
+{% endblock %}
+
+{% block header_decor %}
+<div class="hero-decor-layer">
+    <!-- 右上角同心圆（构成主义标志性几何） -->
+    <svg style="position:absolute;top:-30px;right:-30px;width:140px;height:140px;opacity:0.15;" viewBox="0 0 140 140">
+        <circle cx="70" cy="70" r="65" fill="none" stroke="#1a1a1a" stroke-width="4"/>
+        <circle cx="70" cy="70" r="45" fill="none" stroke="#1a1a1a" stroke-width="3"/>
+        <circle cx="70" cy="70" r="25" fill="#c41230" stroke="none"/>
+    </svg>
+    <!-- 底部黑色斜线条 -->
+    <svg style="position:absolute;bottom:10px;left:-20px;width:180px;height:60px;opacity:0.12;" viewBox="0 0 180 60">
+        <line x1="0" y1="55" x2="170" y2="5" stroke="#1a1a1a" stroke-width="6"/>
+        <line x1="10" y1="60" x2="180" y2="10" stroke="#1a1a1a" stroke-width="3"/>
+    </svg>
+    <!-- 中部小三角群 -->
+    <svg style="position:absolute;bottom:40px;right:60px;width:50px;height:50px;opacity:0.25;" viewBox="0 0 50 50">
+        <polygon points="0,0 25,25 0,50" fill="#c41230"/>
+    </svg>
+</div>
+{% endblock %}
+
+{% block footer_decor %}
+<div class="footer-decor-layer">
+    <!-- 左侧齿轮抽象圆 -->
+    <svg style="position:absolute;bottom:-20px;left:-20px;width:100px;height:100px;opacity:0.1;" viewBox="0 0 100 100">
+        <circle cx="50" cy="50" r="48" fill="none" stroke="#fdfdfb" stroke-width="3" stroke-dasharray="10 6"/>
+        <circle cx="50" cy="50" r="28" fill="none" stroke="#fdfdfb" stroke-width="2"/>
+        <circle cx="50" cy="50" r="8" fill="#c41230" stroke="none"/>
+    </svg>
+    <!-- 右侧对角线组 -->
+    <svg style="position:absolute;top:10px;right:-10px;width:80px;height:80px;opacity:0.08;" viewBox="0 0 80 80">
+        <line x1="0" y1="0" x2="80" y2="80" stroke="#fdfdfb" stroke-width="4"/>
+        <line x1="20" y1="0" x2="80" y2="60" stroke="#fdfdfb" stroke-width="2"/>
+        <line x1="0" y1="20" x2="60" y2="80" stroke="#fdfdfb" stroke-width="2"/>
+    </svg>
+</div>
+{% endblock %}

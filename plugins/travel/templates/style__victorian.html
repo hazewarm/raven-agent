@@ -1,0 +1,455 @@
+{% extends "base.html" %}
+
+{% block style_vars %}
+<style>
+  :root {
+    --color-bg: #f5eddb;
+    --color-surface: #fef9f0;
+    --color-primary: #8b1a1a;
+    --color-secondary: #6b4f3c;
+    --color-accent: #c9a24e;
+    --color-text: #3b2c24;
+    --color-text-secondary: #6b5a4e;
+    --color-text-heading: #5a1e1e;
+    --color-border: #8b1a1a;
+    --color-shadow: rgba(60, 30, 10, 0.15);
+    --font-heading: 'Noto Serif SC', 'Times New Roman', 'Big Caslon', serif;
+    --font-body: 'Noto Serif SC', 'Georgia', 'Times New Roman', serif;
+    --font-mono: 'Noto Sans SC', monospace;
+    --font-size-h1: 2.8rem;
+    --font-size-h2: 1.8rem;
+    --font-size-h3: 1.3rem;
+    --font-size-body: 1rem;
+    --font-size-small: 0.85rem;
+    --line-height: 1.7;
+    --space-xs: 0.25rem;
+    --space-sm: 0.5rem;
+    --space-md: 1rem;
+    --space-lg: 1.5rem;
+    --space-xl: 2rem;
+    --space-xxl: 3rem;
+    --radius-sm: 2px;
+    --radius-md: 4px;
+    --radius-lg: 8px;
+    --transition-fast: 0.15s ease;
+    --transition-normal: 0.3s ease;
+  }
+</style>
+{% endblock %}
+
+{% block style_css %}
+<style>
+  /* 容器宽度约束与基础排版 */
+  main, .container, .max-w-2xl {
+    max-width: 720px;
+    margin: 0 auto;
+  }
+
+  /* 纸张肌理背景 */
+  body {
+    background-color: var(--color-bg);
+    background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    background-blend-mode: multiply;
+    color: var(--color-text);
+    font-family: var(--font-body);
+    font-size: var(--font-size-body);
+    line-height: var(--line-height);
+  }
+
+  /* 维多利亚式共通卡片边框 */
+  .day-card,
+  .budget-section,
+  .xhs-section,
+  .tips-section,
+  .emergency-section,
+  .packing-section {
+    background: var(--color-surface);
+    border: 3px double var(--color-border);
+    padding: var(--space-lg);
+    margin-bottom: var(--space-lg);
+    position: relative;
+    box-shadow: 2px 2px 8px var(--color-shadow), inset 0 0 0 1px rgba(201,162,78,0.2);
+    border-radius: 0;
+  }
+
+  /* 卡片四角金色菱形装饰 */
+  .day-card::before,
+  .budget-section::before,
+  .xhs-section::before,
+  .tips-section::before,
+  .emergency-section::before,
+  .packing-section::before {
+    content: '';
+    position: absolute;
+    top: -8px;
+    left: -8px;
+    width: 20px;
+    height: 20px;
+    background: var(--color-accent);
+    clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+    z-index: 1;
+  }
+
+  .day-card::after,
+  .budget-section::after,
+  .xhs-section::after,
+  .tips-section::after,
+  .emergency-section::after,
+  .packing-section::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    right: -8px;
+    width: 20px;
+    height: 20px;
+    background: var(--color-accent);
+    clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+    z-index: 1;
+  }
+
+  /* Hero 封面区 —— 双重边框与装饰投影 */
+  .hero {
+    background: var(--color-surface);
+    border: 5px solid var(--color-primary);
+    padding: var(--space-xxl) var(--space-xl);
+    text-align: center;
+    position: relative;
+    margin-bottom: var(--space-lg);
+    box-shadow: inset 0 0 0 2px var(--color-accent), 4px 4px 0 var(--color-primary);
+  }
+
+  .hero h1 {
+    font-family: var(--font-heading);
+    font-size: var(--font-size-h1);
+    color: var(--color-text-heading);
+    display: inline-block;
+    padding: 0 30px;
+    position: relative;
+    letter-spacing: 0.04em;
+  }
+
+  /* 标题两侧金线装饰 */
+  .hero h1::before,
+  .hero h1::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: 60px;
+    height: 3px;
+    background: var(--color-accent);
+  }
+  .hero h1::before {
+    left: -70px;
+  }
+  .hero h1::after {
+    right: -70px;
+  }
+
+  /* 副标题斜体与装饰 */
+  .subtitle {
+    font-style: italic;
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-h3);
+    margin-top: var(--space-sm);
+    letter-spacing: 0.08em;
+  }
+
+  .weather-overview,
+  .budget-overview {
+    display: inline-block;
+    border: 2px solid var(--color-secondary);
+    padding: var(--space-xs) var(--space-md);
+    margin: var(--space-sm);
+    background: var(--color-bg);
+    font-size: var(--font-size-small);
+    color: var(--color-text-secondary);
+    font-style: italic;
+    position: relative;
+  }
+
+  .weather-overview::first-letter,
+  .budget-overview::first-letter {
+    font-size: 1.2em;
+    color: var(--color-primary);
+    font-weight: bold;
+  }
+
+  /* Hero 装饰元素（header_decor 提供） */
+  .hero-ornament-top {
+    width: 80%;
+    height: 6px;
+    margin: 0 auto 20px auto;
+    background: repeating-linear-gradient(90deg, var(--color-accent) 0, var(--color-accent) 4px, transparent 4px, transparent 8px);
+  }
+
+  .hero-corner-tl,
+  .hero-corner-tr,
+  .hero-corner-bl,
+  .hero-corner-br {
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    pointer-events: none;
+  }
+  .hero-corner-tl { top: -5px; left: -5px; border-top: 4px solid var(--color-accent); border-left: 4px solid var(--color-accent); }
+  .hero-corner-tr { top: -5px; right: -5px; border-top: 4px solid var(--color-accent); border-right: 4px solid var(--color-accent); }
+  .hero-corner-bl { bottom: -5px; left: -5px; border-bottom: 4px solid var(--color-accent); border-left: 4px solid var(--color-accent); }
+  .hero-corner-br { bottom: -5px; right: -5px; border-bottom: 4px solid var(--color-accent); border-right: 4px solid var(--color-accent); }
+
+  /* 每日卡片标题 */
+  .day-card h2 {
+    font-family: var(--font-heading);
+    color: var(--color-text-heading);
+    border-bottom: 2px solid var(--color-accent);
+    display: inline-block;
+    padding-bottom: var(--space-xs);
+    margin-bottom: var(--space-md);
+  }
+
+  .day-theme {
+    font-style: italic;
+    color: var(--color-secondary);
+    margin-bottom: var(--space-md);
+    font-size: var(--font-size-h3);
+  }
+
+  .weather-badge {
+    display: inline-block;
+    background: var(--color-primary);
+    color: #fff;
+    padding: var(--space-xs) var(--space-sm);
+    font-size: var(--font-size-small);
+    font-family: var(--font-mono);
+    border: 1px solid var(--color-accent);
+    letter-spacing: 0.05em;
+  }
+
+  /* 活动项 —— 左侧金线时间轴 */
+  .activity-item {
+    border-left: 3px solid var(--color-accent);
+    padding-left: var(--space-md);
+    margin-bottom: var(--space-md);
+    position: relative;
+  }
+
+  .activity-item::before {
+    content: '';
+    position: absolute;
+    left: -9px;
+    top: 0;
+    width: 15px;
+    height: 15px;
+    background: var(--color-primary);
+    border-radius: 50%;
+    border: 2px solid var(--color-accent);
+  }
+
+  .activity-order {
+    font-weight: bold;
+    color: var(--color-accent);
+    margin-right: var(--space-xs);
+  }
+
+  .activity-time {
+    font-size: var(--font-size-small);
+    color: var(--color-text-secondary);
+    font-family: var(--font-mono);
+  }
+
+  .activity-desc {
+    margin-top: var(--space-xs);
+  }
+
+  .activity-location a {
+    color: var(--color-secondary);
+    text-decoration: underline;
+    text-decoration-color: var(--color-accent);
+    text-underline-offset: 2px;
+  }
+
+  .transport-info,
+  .meal-info {
+    font-size: var(--font-size-small);
+    color: var(--color-text-secondary);
+    border: 1px dashed var(--color-border);
+    padding: var(--space-xs) var(--space-sm);
+    display: inline-block;
+    margin-top: var(--space-xs);
+  }
+
+  /* 地图容器 —— 保持简洁，严禁滤镜 */
+  .day-map {
+    border: 2px solid var(--color-primary);
+    margin-top: var(--space-md);
+  }
+
+  .hotel-info {
+    background: var(--color-bg);
+    padding: var(--space-sm);
+    border: 1px solid var(--color-secondary);
+    font-size: var(--font-size-small);
+    margin-top: var(--space-sm);
+  }
+
+  /* 预算区 */
+  .budget-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .budget-item {
+    border-bottom: 1px dotted var(--color-border);
+    padding: var(--space-sm) 0;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: var(--space-xs);
+  }
+
+  .budget-item .budget-amount {
+    margin-left: auto;
+  }
+
+  .budget-total {
+    font-weight: bold;
+    color: var(--color-primary);
+    border-top: 2px solid var(--color-primary);
+    padding-top: var(--space-sm);
+    margin-top: var(--space-sm);
+    display: flex;
+    justify-content: space-between;
+  }
+
+  /* 小红书笔记 */
+  .xhs-note {
+    border: 1px solid var(--color-border);
+    padding: var(--space-md);
+    background: var(--color-surface);
+    box-shadow: 1px 1px 4px var(--color-shadow);
+    margin-bottom: var(--space-md);
+    position: relative;
+  }
+
+  .xhs-note::before {
+    content: '\f004';
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    color: var(--color-accent);
+    font-size: 1.2rem;
+  }
+
+  /* 贴士列表 —— 蕨叶装饰符 */
+  .tips-section ul {
+    list-style: none;
+    padding-left: 0;
+  }
+
+  .tips-section li {
+    padding-left: 1.8em;
+    position: relative;
+    margin-bottom: var(--space-sm);
+  }
+
+  .tips-section li::before {
+    content: '\f06c';
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
+    position: absolute;
+    left: 0;
+    top: 0.15em;
+    color: var(--color-accent);
+    font-size: 0.9em;
+  }
+
+  /* 紧急信息特殊底色 */
+  .emergency-section {
+    border-color: var(--color-primary);
+    background: #fdf8f6;
+  }
+
+  /* 打包清单 */
+  .packing-section ul {
+    list-style: none;
+    padding-left: 0;
+  }
+
+  .packing-section li {
+    padding-left: 1.8em;
+    position: relative;
+    margin-bottom: var(--space-xs);
+  }
+
+  .packing-section li::before {
+    content: '\f00c';
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
+    position: absolute;
+    left: 0;
+    top: 0.15em;
+    color: var(--color-secondary);
+    font-size: 0.8em;
+  }
+
+  /* 页脚 */
+  footer {
+    text-align: center;
+    font-size: var(--font-size-small);
+    color: var(--color-text-secondary);
+    border-top: 2px solid var(--color-accent);
+    padding-top: var(--space-md);
+    margin-top: var(--space-xl);
+    position: relative;
+  }
+
+  footer::before {
+    content: '\f02e';
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
+    position: absolute;
+    top: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--color-bg);
+    padding: 0 10px;
+    color: var(--color-accent);
+    font-size: 1.5rem;
+  }
+
+  /* 验证徽章 */
+  .verification-badge.community-match,
+  .verification-badge.community-only {
+    border: 1px solid var(--color-accent);
+    background: var(--color-surface);
+    padding: var(--space-xs) var(--space-sm);
+    display: inline-block;
+    font-size: var(--font-size-small);
+    color: var(--color-text);
+  }
+
+  /* 装饰分割线 */
+  .xhs-section hr,
+  .tips-section hr,
+  .packing-section hr {
+    border: none;
+    height: 4px;
+    background: repeating-linear-gradient(90deg, var(--color-accent) 0, var(--color-accent) 4px, transparent 4px, transparent 8px);
+    margin: var(--space-md) 0;
+  }
+</style>
+{% endblock %}
+
+{% block header_decor %}
+<div class="hero-ornament-top"></div>
+<div class="hero-corner-tl"></div>
+<div class="hero-corner-tr"></div>
+<div class="hero-corner-bl"></div>
+<div class="hero-corner-br"></div>
+{% endblock %}
+
+{% block footer_decor %}
+<div style="width:60%; height:1px; background: var(--color-accent); margin: 10px auto; opacity:0.5;"></div>
+{% endblock %}

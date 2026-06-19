@@ -1,0 +1,776 @@
+{% extends "base.html" %}
+
+{% block style_vars %}
+<style>
+    :root {
+        /* 极简中性色系 — 灵感源自优质纸张与自然石材 */
+        --color-bg: #fafaf7;
+        --color-surface: #ffffff;
+        --color-primary: #1a1a1a;
+        --color-secondary: #6e6e6e;
+        --color-accent: #2b2b2b;
+        --color-text: #1a1a1a;
+        --color-text-secondary: #737373;
+        --color-text-heading: #0d0d0d;
+        --color-border: #e6e6e2;
+        --color-shadow: rgba(0, 0, 0, 0.04);
+
+        /* 无衬线字体 — 纯粹、现代、清晰 */
+        --font-heading: 'Noto Sans SC', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        --font-body: 'Noto Sans SC', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        --font-mono: 'SF Mono', 'Menlo', 'Consolas', 'Courier New', monospace;
+
+        /* 精确的字号层级 — 基于和谐比例 */
+        --font-size-h1: 2.375rem;
+        --font-size-h2: 1.375rem;
+        --font-size-h3: 1.0625rem;
+        --font-size-body: 0.9375rem;
+        --font-size-small: 0.8125rem;
+
+        --line-height: 1.75;
+
+        /* 间距系统 — 以4px为基准单位 */
+        --space-xs: 0.25rem;
+        --space-sm: 0.5rem;
+        --space-md: 1rem;
+        --space-lg: 1.5rem;
+        --space-xl: 2.25rem;
+        --space-xxl: 3.5rem;
+
+        /* 极小的圆角 — 仅用于微妙柔化 */
+        --radius-sm: 1px;
+        --radius-md: 2px;
+        --radius-lg: 3px;
+
+        /* 克制的过渡 */
+        --transition-fast: 0.12s ease;
+        --transition-normal: 0.25s ease;
+    }
+</style>
+{% endblock %}
+
+{% block style_css %}
+<style>
+    /* ========== 限制主容器宽度，避免桌面端铺满全屏 ========== */
+    main, .container, .max-w-2xl {
+        max-width: 720px;
+        margin: 0 auto;
+    }
+
+    /* ========== 全局布局基调 ========== */
+    .hero {
+        padding: var(--space-xxl) var(--space-xl) var(--space-xl);
+        background-color: var(--color-bg);
+        text-align: left;
+        position: relative;
+        border-bottom: 1px solid var(--color-border);
+    }
+
+    .hero h1 {
+        font-family: var(--font-heading);
+        font-size: var(--font-size-h1);
+        font-weight: 700;
+        color: var(--color-text-heading);
+        letter-spacing: 0.04em;
+        margin: 0 0 var(--space-sm);
+        line-height: 1.2;
+        word-break: break-word;
+    }
+
+    .hero .subtitle {
+        font-family: var(--font-body);
+        font-size: var(--font-size-small);
+        font-weight: 400;
+        color: var(--color-text-secondary);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin: 0 0 var(--space-lg);
+    }
+
+    .hero .weather-overview,
+    .hero .budget-overview {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--space-sm);
+        font-family: var(--font-body);
+        font-size: var(--font-size-small);
+        color: var(--color-text-secondary);
+        margin-right: var(--space-xl);
+        line-height: 1.5;
+    }
+
+    .hero .weather-overview i,
+    .hero .budget-overview i {
+        color: var(--color-primary);
+        font-size: 0.875rem;
+        width: 1.1em;
+        text-align: center;
+    }
+
+    /* ========== 每日行程卡片 ========== */
+    .day-card {
+        background-color: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-md);
+        padding: var(--space-xl) var(--space-lg);
+        margin: 0 var(--space-md) var(--space-lg);
+        box-shadow: 0 1px 2px var(--color-shadow);
+        transition: box-shadow var(--transition-normal);
+    }
+
+    .day-card:hover {
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    }
+
+    .day-card h2 {
+        font-family: var(--font-heading);
+        font-size: var(--font-size-h2);
+        font-weight: 600;
+        color: var(--color-text-heading);
+        letter-spacing: 0.02em;
+        margin: 0 0 var(--space-xs);
+        line-height: 1.3;
+    }
+
+    .day-card .day-theme {
+        font-family: var(--font-body);
+        font-size: var(--font-size-small);
+        font-weight: 400;
+        color: var(--color-text-secondary);
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        margin: 0 0 var(--space-lg);
+        padding-bottom: var(--space-md);
+        border-bottom: 1px solid var(--color-border);
+    }
+
+    .day-card .weather-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--space-xs);
+        font-family: var(--font-body);
+        font-size: var(--font-size-small);
+        font-weight: 500;
+        color: var(--color-text-secondary);
+        margin-bottom: var(--space-lg);
+        letter-spacing: 0.02em;
+    }
+
+    .day-card .weather-badge i {
+        color: var(--color-primary);
+        font-size: 0.875rem;
+    }
+
+    /* ========== 活动项目 — 清晰有序 ========== */
+    .activity-item {
+        position: relative;
+        padding: var(--space-md) 0 var(--space-md) var(--space-xl);
+        border-left: 1px solid var(--color-border);
+        margin-left: var(--space-sm);
+        transition: border-color var(--transition-fast);
+    }
+
+    .activity-item:last-child {
+        padding-bottom: 0;
+    }
+
+    .activity-item:hover {
+        border-left-color: var(--color-primary);
+    }
+
+    .activity-item .activity-order {
+        position: absolute;
+        left: calc(-1 * var(--space-sm) - 0.5rem);
+        top: var(--space-md);
+        width: 1.5rem;
+        height: 1.5rem;
+        background-color: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: var(--font-mono);
+        font-size: 0.7rem;
+        font-weight: 500;
+        color: var(--color-text-secondary);
+        transition: all var(--transition-fast);
+        line-height: 1;
+    }
+
+    .activity-item:hover .activity-order {
+        background-color: var(--color-primary);
+        color: #ffffff;
+        border-color: var(--color-primary);
+    }
+
+    .activity-item h3 {
+        font-family: var(--font-heading);
+        font-size: var(--font-size-h3);
+        font-weight: 600;
+        color: var(--color-text-heading);
+        margin: 0 0 var(--space-xs);
+        line-height: 1.4;
+        letter-spacing: 0.01em;
+    }
+
+    .activity-item .activity-time {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--space-xs);
+        font-family: var(--font-mono);
+        font-size: var(--font-size-small);
+        font-weight: 500;
+        color: var(--color-text-secondary);
+        margin-bottom: var(--space-sm);
+        letter-spacing: 0.02em;
+    }
+
+    .activity-item .activity-time i {
+        font-size: 0.7rem;
+        color: var(--color-text-secondary);
+    }
+
+    .activity-item .activity-desc {
+        font-family: var(--font-body);
+        font-size: var(--font-size-body);
+        font-weight: 400;
+        color: var(--color-text);
+        line-height: var(--line-height);
+        margin: 0 0 var(--space-sm);
+    }
+
+    .activity-item .activity-location {
+        font-family: var(--font-body);
+        font-size: var(--font-size-small);
+        font-weight: 400;
+        color: var(--color-text-secondary);
+        margin-bottom: var(--space-xs);
+        display: flex;
+        align-items: center;
+        gap: var(--space-xs);
+    }
+
+    .activity-item .activity-location a {
+        color: var(--color-text);
+        text-decoration: none;
+        border-bottom: 1px solid var(--color-border);
+        transition: border-color var(--transition-fast);
+        padding-bottom: 1px;
+    }
+
+    .activity-item .activity-location a:hover {
+        border-bottom-color: var(--color-primary);
+    }
+
+    .activity-item .activity-location i {
+        font-size: 0.7rem;
+        color: var(--color-text-secondary);
+        width: 1em;
+        text-align: center;
+        flex-shrink: 0;
+    }
+
+    .activity-item .transport-info,
+    .activity-item .meal-info {
+        font-family: var(--font-body);
+        font-size: var(--font-size-small);
+        font-weight: 400;
+        color: var(--color-text-secondary);
+        margin-bottom: var(--space-xs);
+        display: flex;
+        align-items: center;
+        gap: var(--space-xs);
+        line-height: 1.5;
+    }
+
+    .activity-item .transport-info i,
+    .activity-item .meal-info i {
+        font-size: 0.7rem;
+        color: var(--color-text-secondary);
+        width: 1em;
+        text-align: center;
+        flex-shrink: 0;
+    }
+
+    /* ========== 地图容器 ========== */
+    .day-map {
+        margin: var(--space-lg) 0;
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-md);
+        min-height: 200px;
+        background-color: #f5f5f3;
+        overflow: hidden;
+    }
+
+    /* ========== 酒店信息 ========== */
+    .hotel-info {
+        font-family: var(--font-body);
+        font-size: var(--font-size-body);
+        color: var(--color-text);
+        padding: var(--space-md) 0;
+        margin-top: var(--space-md);
+        border-top: 1px solid var(--color-border);
+        line-height: var(--line-height);
+    }
+
+    .hotel-info strong {
+        font-weight: 600;
+        color: var(--color-text-heading);
+    }
+
+    /* ========== 预算区域 ========== */
+    .budget-section {
+        padding: var(--space-xl) var(--space-lg);
+        margin: 0 var(--space-md) var(--space-lg);
+        background-color: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-md);
+        box-shadow: 0 1px 2px var(--color-shadow);
+    }
+
+    .budget-section h2,
+    .budget-section h3 {
+        font-family: var(--font-heading);
+        font-size: var(--font-size-h2);
+        font-weight: 600;
+        color: var(--color-text-heading);
+        margin: 0 0 var(--space-lg);
+        letter-spacing: 0.02em;
+    }
+
+    .budget-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+        font-family: var(--font-body);
+        font-size: var(--font-size-body);
+    }
+
+    .budget-item {
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        gap: var(--space-xs);
+        padding: var(--space-sm) 0;
+        border-bottom: 1px solid var(--color-border);
+        color: var(--color-text);
+        font-weight: 400;
+    }
+
+    .budget-item i {
+        margin-right: var(--space-xs);
+        color: var(--color-text-secondary);
+        width: 1.2em;
+        text-align: center;
+        font-size: 0.85rem;
+    }
+
+    .budget-item .budget-amount {
+        margin-left: auto;
+        color: var(--color-text);
+        font-weight: 500;
+        text-align: right;
+        font-family: var(--font-mono);
+        font-size: 0.9em;
+        letter-spacing: 0.02em;
+    }
+
+    .budget-total {
+        grid-column: 1 / -1;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: var(--space-md);
+        margin-top: var(--space-sm);
+        border-top: 1px solid var(--color-primary);
+        font-weight: 600;
+        color: var(--color-text-heading);
+        font-size: 1.05em;
+        letter-spacing: 0.02em;
+    }
+
+    .budget-total span:last-child {
+        font-family: var(--font-mono);
+        font-weight: 700;
+        font-size: 1.1em;
+    }
+
+    /* ========== 小红书攻略区域 ========== */
+    .xhs-section {
+        padding: var(--space-xl) var(--space-lg);
+        margin: 0 var(--space-md) var(--space-lg);
+        background-color: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-md);
+        box-shadow: 0 1px 2px var(--color-shadow);
+    }
+
+    .xhs-section h2,
+    .xhs-section h3 {
+        font-family: var(--font-heading);
+        font-size: var(--font-size-h2);
+        font-weight: 600;
+        color: var(--color-text-heading);
+        margin: 0 0 var(--space-lg);
+        letter-spacing: 0.02em;
+    }
+
+    .xhs-note {
+        padding: var(--space-md) 0;
+        border-bottom: 1px solid var(--color-border);
+        transition: background-color var(--transition-fast);
+    }
+
+    .xhs-note:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+
+    .xhs-note:first-child {
+        padding-top: 0;
+    }
+
+    .xhs-note h4 {
+        font-family: var(--font-heading);
+        font-size: var(--font-size-h3);
+        font-weight: 600;
+        color: var(--color-text-heading);
+        margin: 0 0 var(--space-xs);
+        line-height: 1.4;
+    }
+
+    .xhs-note p {
+        font-family: var(--font-body);
+        font-size: var(--font-size-body);
+        color: var(--color-text);
+        line-height: var(--line-height);
+        margin: 0;
+    }
+
+    .xhs-note .xhs-note-meta {
+        font-family: var(--font-body);
+        font-size: var(--font-size-small);
+        color: var(--color-text-secondary);
+        margin-top: var(--space-xs);
+        letter-spacing: 0.02em;
+    }
+
+    /* ========== 旅行贴士区域 ========== */
+    .tips-section {
+        padding: var(--space-xl) var(--space-lg);
+        margin: 0 var(--space-md) var(--space-lg);
+        background-color: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-md);
+        box-shadow: 0 1px 2px var(--color-shadow);
+    }
+
+    .tips-section h2,
+    .tips-section h3 {
+        font-family: var(--font-heading);
+        font-size: var(--font-size-h2);
+        font-weight: 600;
+        color: var(--color-text-heading);
+        margin: 0 0 var(--space-lg);
+        letter-spacing: 0.02em;
+    }
+
+    .tips-section ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .tips-section ul li {
+        font-family: var(--font-body);
+        font-size: var(--font-size-body);
+        color: var(--color-text);
+        line-height: var(--line-height);
+        padding: var(--space-sm) 0 var(--space-sm) var(--space-lg);
+        position: relative;
+        border-bottom: 1px solid var(--color-border);
+    }
+
+    .tips-section ul li:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+
+    .tips-section ul li:first-child {
+        padding-top: 0;
+    }
+
+    .tips-section ul li::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0.85em;
+        width: 5px;
+        height: 5px;
+        background-color: var(--color-primary);
+        border-radius: 50%;
+    }
+
+    /* ========== 紧急信息区域 ========== */
+    .emergency-section {
+        padding: var(--space-xl) var(--space-lg);
+        margin: 0 var(--space-md) var(--space-lg);
+        background-color: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-left: 2px solid var(--color-primary);
+        border-radius: var(--radius-md);
+        box-shadow: 0 1px 2px var(--color-shadow);
+    }
+
+    .emergency-section h2,
+    .emergency-section h3 {
+        font-family: var(--font-heading);
+        font-size: var(--font-size-h2);
+        font-weight: 600;
+        color: var(--color-text-heading);
+        margin: 0 0 var(--space-md);
+        letter-spacing: 0.02em;
+    }
+
+    .emergency-section p,
+    .emergency-section li {
+        font-family: var(--font-body);
+        font-size: var(--font-size-body);
+        color: var(--color-text);
+        line-height: var(--line-height);
+        margin: 0 0 var(--space-sm);
+    }
+
+    .emergency-section ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .emergency-section ul li {
+        padding: var(--space-xs) 0;
+        border-bottom: 1px solid var(--color-border);
+    }
+
+    .emergency-section ul li:last-child {
+        border-bottom: none;
+    }
+
+    .emergency-section strong {
+        font-weight: 600;
+        color: var(--color-text-heading);
+    }
+
+    /* ========== 行李清单区域 ========== */
+    .packing-section {
+        padding: var(--space-xl) var(--space-lg);
+        margin: 0 var(--space-md) var(--space-lg);
+        background-color: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-md);
+        box-shadow: 0 1px 2px var(--color-shadow);
+    }
+
+    .packing-section h2,
+    .packing-section h3 {
+        font-family: var(--font-heading);
+        font-size: var(--font-size-h2);
+        font-weight: 600;
+        color: var(--color-text-heading);
+        margin: 0 0 var(--space-lg);
+        letter-spacing: 0.02em;
+    }
+
+    .packing-section ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--space-sm) var(--space-lg);
+    }
+
+    .packing-section ul li {
+        font-family: var(--font-body);
+        font-size: var(--font-size-body);
+        color: var(--color-text);
+        line-height: var(--line-height);
+        padding: var(--space-xs) 0 var(--space-xs) var(--space-lg);
+        position: relative;
+    }
+
+    .packing-section ul li::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0.7em;
+        width: 8px;
+        height: 8px;
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-sm);
+        background-color: transparent;
+    }
+
+    /* ========== 页脚 ========== */
+    footer {
+        padding: var(--space-xl) var(--space-lg);
+        margin: var(--space-lg) var(--space-md) 0;
+        text-align: center;
+        font-family: var(--font-body);
+        font-size: var(--font-size-small);
+        color: var(--color-text-secondary);
+        letter-spacing: 0.03em;
+        border-top: 1px solid var(--color-border);
+    }
+
+    footer a {
+        color: var(--color-text);
+        text-decoration: none;
+        border-bottom: 1px solid transparent;
+        transition: border-color var(--transition-fast);
+    }
+
+    footer a:hover {
+        border-bottom-color: var(--color-primary);
+    }
+
+    /* ========== 数据可信度徽章 ========== */
+    .verification-badge.community-match {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--space-xs);
+        font-family: var(--font-body);
+        font-size: var(--font-size-small);
+        font-weight: 500;
+        color: var(--color-text-secondary);
+        padding: var(--space-xs) var(--space-sm);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-md);
+        background-color: var(--color-surface);
+        letter-spacing: 0.02em;
+        transition: all var(--transition-fast);
+    }
+
+    .verification-badge.community-match i {
+        color: var(--color-primary);
+        font-size: 0.7rem;
+    }
+
+    .verification-badge.community-only {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--space-xs);
+        font-family: var(--font-body);
+        font-size: var(--font-size-small);
+        font-weight: 400;
+        color: var(--color-text-secondary);
+        padding: var(--space-xs) var(--space-sm);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-md);
+        background-color: var(--color-bg);
+        letter-spacing: 0.02em;
+    }
+
+    .verification-badge.community-only i {
+        font-size: 0.7rem;
+        color: var(--color-text-secondary);
+    }
+
+    /* ========== 响应式调整 ========== */
+    @media (max-width: 640px) {
+        :root {
+            --font-size-h1: 1.75rem;
+            --font-size-h2: 1.2rem;
+            --font-size-h3: 1rem;
+            --font-size-body: 0.875rem;
+            --font-size-small: 0.75rem;
+            --space-xxl: 2.5rem;
+            --space-xl: 1.5rem;
+            --space-lg: 1.25rem;
+            --space-md: 0.875rem;
+        }
+
+        .hero {
+            padding: var(--space-xxl) var(--space-md) var(--space-lg);
+        }
+
+        .hero .weather-overview,
+        .hero .budget-overview {
+            display: block;
+            margin-right: 0;
+            margin-bottom: var(--space-xs);
+        }
+
+        .day-card {
+            margin: 0 var(--space-sm) var(--space-md);
+            padding: var(--space-lg) var(--space-md);
+        }
+
+        .activity-item {
+            padding-left: var(--space-lg);
+            margin-left: 0;
+        }
+
+        .activity-item .activity-order {
+            left: -0.75rem;
+            width: 1.3rem;
+            height: 1.3rem;
+            font-size: 0.65rem;
+        }
+
+        .budget-section,
+        .xhs-section,
+        .tips-section,
+        .emergency-section,
+        .packing-section {
+            margin: 0 var(--space-sm) var(--space-md);
+            padding: var(--space-lg) var(--space-md);
+        }
+
+        .packing-section ul {
+            grid-template-columns: 1fr;
+        }
+
+        .budget-grid {
+            gap: var(--space-xs) var(--space-md);
+            font-size: var(--font-size-small);
+        }
+
+        footer {
+            margin: var(--space-md) var(--space-sm) 0;
+            padding: var(--space-lg) var(--space-md);
+        }
+    }
+
+    @media (max-width: 380px) {
+        :root {
+            --font-size-h1: 1.5rem;
+            --font-size-h2: 1.1rem;
+        }
+
+        .activity-item {
+            padding-left: var(--space-md);
+        }
+
+        .activity-item .activity-order {
+            left: -0.6rem;
+            width: 1.15rem;
+            height: 1.15rem;
+            font-size: 0.6rem;
+        }
+
+        .day-card {
+            padding: var(--space-md) var(--space-sm);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block header_decor %}
+<!-- 极简主义：无冗余装饰，让空间与排版自身成为美学表达 -->
+{% endblock %}
+
+{% block footer_decor %}
+<!-- 极简主义：页脚仅以一线收束，余韵留给留白 -->
+{% endblock %}

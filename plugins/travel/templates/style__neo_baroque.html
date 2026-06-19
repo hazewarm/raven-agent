@@ -1,0 +1,1079 @@
+{% extends "base.html" %}
+
+{% block style_vars %}
+<style>
+    :root {
+        /* === 新巴洛克数字风格 — 色彩系统 === */
+        --color-bg: #1A0C0C;
+        --color-surface: #241415;
+        --color-primary: #D4A85C;
+        --color-secondary: #8B2D3B;
+        --color-accent: #1E3A5F;
+        --color-text: #E8DCC8;
+        --color-text-secondary: #B8A88A;
+        --color-text-heading: #F0D78C;
+        --color-border: #5A3D2E;
+        --color-shadow: rgba(0, 0, 0, 0.6);
+
+        /* === 字体系统 === */
+        --font-heading: 'Noto Serif SC', 'Times New Roman', serif;
+        --font-body: 'Noto Sans SC', 'Helvetica Neue', sans-serif;
+        --font-mono: 'SF Mono', 'Consolas', 'Monaco', monospace;
+
+        /* === 字号 === */
+        --font-size-h1: 2.6rem;
+        --font-size-h2: 1.6rem;
+        --font-size-h3: 1.15rem;
+        --font-size-body: 0.95rem;
+        --font-size-small: 0.8rem;
+
+        /* === 行高 === */
+        --line-height: 1.75;
+
+        /* === 间距 === */
+        --space-xs: 4px;
+        --space-sm: 8px;
+        --space-md: 16px;
+        --space-lg: 24px;
+        --space-xl: 32px;
+        --space-xxl: 48px;
+
+        /* === 圆角 === */
+        --radius-sm: 3px;
+        --radius-md: 6px;
+        --radius-lg: 10px;
+
+        /* === 过渡 === */
+        --transition-fast: 0.15s ease;
+        --transition-normal: 0.3s ease;
+    }
+</style>
+{% endblock %}
+
+{% block style_css %}
+<style>
+    /* ============================================================
+       容器宽度约束
+       ============================================================ */
+    main,
+    .container,
+    .max-w-2xl {
+        max-width: 720px;
+        margin: 0 auto;
+    }
+
+    /* ============================================================
+       全页面背景 — 深色天鹅绒质感 + 微妙金粉纹理
+       ============================================================ */
+    body {
+        background-color: var(--color-bg);
+        background-image:
+            /* 中心放射光晕 — 模拟巴洛克戏剧光 */
+            radial-gradient(ellipse at 50% 15%, rgba(180, 130, 60, 0.08) 0%, transparent 65%),
+            /* 微妙金粉纹理 */
+            repeating-linear-gradient(2deg,
+                transparent,
+                transparent 3px,
+                rgba(200, 160, 80, 0.015) 3px,
+                rgba(200, 160, 80, 0.015) 3.5px),
+            repeating-linear-gradient(92deg,
+                transparent,
+                transparent 5px,
+                rgba(180, 130, 60, 0.01) 5px,
+                rgba(180, 130, 60, 0.01) 5.5px);
+        background-attachment: fixed;
+        color: var(--color-text);
+        font-family: var(--font-body);
+        font-size: var(--font-size-body);
+        line-height: var(--line-height);
+        min-height: 100vh;
+    }
+
+    /* ============================================================
+       Hero 封面区 — 巴洛克华丽框架
+       ============================================================ */
+    .hero {
+        position: relative;
+        background: linear-gradient(175deg,
+                #1F0E0E 0%,
+                #261212 20%,
+                #1A0A0A 50%,
+                #1F0E0E 100%);
+        border: 2px solid #6B4A2C;
+        border-radius: var(--radius-lg);
+        padding: var(--space-xxl) var(--space-xl) var(--space-xl);
+        margin-bottom: var(--space-lg);
+        box-shadow:
+            /* 外发光 — 金色光晕 */
+            0 0 60px rgba(180, 120, 40, 0.18),
+            0 0 120px rgba(140, 80, 20, 0.08),
+            /* 浮雕边框 */
+            inset 0 1px 0 rgba(220, 180, 100, 0.25),
+            inset 0 -1px 0 rgba(0, 0, 0, 0.5),
+            /* 深度阴影 */
+            0 8px 40px rgba(0, 0, 0, 0.55);
+        overflow: hidden;
+        z-index: 1;
+    }
+
+    /* Hero 内边框装饰线 */
+    .hero::before {
+        content: '';
+        position: absolute;
+        inset: 8px;
+        border: 1px solid rgba(200, 155, 70, 0.35);
+        border-radius: calc(var(--radius-lg) - 2px);
+        pointer-events: none;
+        z-index: 2;
+    }
+
+    /* Hero 底角装饰 — 金色卷纹暗示 */
+    .hero::after {
+        content: '';
+        position: absolute;
+        bottom: 12px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 120px;
+        height: 2px;
+        background: linear-gradient(90deg,
+                transparent,
+                rgba(200, 150, 60, 0.5) 20%,
+                rgba(220, 170, 80, 0.7) 50%,
+                rgba(200, 150, 60, 0.5) 80%,
+                transparent);
+        pointer-events: none;
+        z-index: 3;
+    }
+
+    /* Hero 标题 — 华丽金色 */
+    .hero h1 {
+        font-family: var(--font-heading);
+        font-size: var(--font-size-h1);
+        color: var(--color-text-heading);
+        text-align: center;
+        letter-spacing: 0.08em;
+        text-shadow:
+            0 0 30px rgba(210, 160, 70, 0.5),
+            0 0 60px rgba(180, 120, 30, 0.3),
+            0 2px 4px rgba(0, 0, 0, 0.6);
+        position: relative;
+        z-index: 3;
+        margin-bottom: var(--space-sm);
+    }
+
+    /* Hero 标题装饰线 */
+    .hero h1::after {
+        content: '';
+        display: block;
+        width: 60px;
+        height: 3px;
+        margin: 12px auto 0;
+        background: linear-gradient(90deg,
+                transparent,
+                #C9974A 30%,
+                #E8C878 50%,
+                #C9974A 70%,
+                transparent);
+        border-radius: 1px;
+    }
+
+    /* 日期副标题 */
+    .hero .subtitle {
+        font-family: var(--font-heading);
+        color: var(--color-text-secondary);
+        text-align: center;
+        font-size: var(--font-size-small);
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        position: relative;
+        z-index: 3;
+        margin-bottom: var(--space-md);
+    }
+
+    /* 天气 & 预算概览在 Hero 中的样式 */
+    .hero .weather-overview,
+    .hero .budget-overview {
+        position: relative;
+        z-index: 3;
+        background: rgba(20, 8, 8, 0.7);
+        border: 1px solid rgba(180, 130, 60, 0.3);
+        border-radius: var(--radius-md);
+        padding: var(--space-sm) var(--space-md);
+        margin: var(--space-sm) 0;
+        color: var(--color-text);
+        font-size: var(--font-size-small);
+        text-align: center;
+        backdrop-filter: blur(4px);
+    }
+
+    .hero .weather-overview {
+        display: inline-block;
+        margin-right: var(--space-sm);
+    }
+
+    .hero .budget-overview {
+        display: inline-block;
+    }
+
+    /* Hero 内天气/预算的装饰图标前缀 */
+    .hero .weather-overview::before {
+        content: '\f185';
+        font-family: 'Font Awesome 6 Free';
+        font-weight: 900;
+        margin-right: 6px;
+        color: var(--color-primary);
+        font-size: 0.85em;
+    }
+
+    .hero .budget-overview::before {
+        content: '\f51e';
+        font-family: 'Font Awesome 6 Free';
+        font-weight: 900;
+        margin-right: 6px;
+        color: var(--color-primary);
+        font-size: 0.85em;
+    }
+
+    /* ============================================================
+       Day Card — 巴洛克装裱画框风格
+       ============================================================ */
+    .day-card {
+        position: relative;
+        background: var(--color-surface);
+        border: 2px solid #5C3A24;
+        border-radius: var(--radius-lg);
+        padding: var(--space-xl) var(--space-lg);
+        margin-bottom: var(--space-lg);
+        box-shadow:
+            0 0 30px rgba(0, 0, 0, 0.5),
+            0 4px 16px rgba(0, 0, 0, 0.4),
+            inset 0 1px 0 rgba(200, 155, 70, 0.2);
+        overflow: visible;
+        z-index: 1;
+    }
+
+    /* 内层装饰边框 */
+    .day-card::before {
+        content: '';
+        position: absolute;
+        inset: 6px;
+        border: 1px solid rgba(185, 140, 55, 0.3);
+        border-radius: calc(var(--radius-lg) - 3px);
+        pointer-events: none;
+        z-index: 0;
+    }
+
+    /* 左上角金色菱形装饰 */
+    .day-card::after {
+        content: '◆';
+        position: absolute;
+        top: -10px;
+        left: 20px;
+        font-size: 14px;
+        color: var(--color-primary);
+        z-index: 5;
+        text-shadow: 0 0 8px rgba(210, 160, 60, 0.7);
+        pointer-events: none;
+    }
+
+    /* Day 标题 — 华丽编号 */
+    .day-card h2 {
+        font-family: var(--font-heading);
+        font-size: var(--font-size-h2);
+        color: var(--color-text-heading);
+        letter-spacing: 0.06em;
+        position: relative;
+        z-index: 3;
+        margin-bottom: var(--space-xs);
+        padding-left: var(--space-md);
+        border-left: 3px solid var(--color-primary);
+        text-shadow: 0 0 20px rgba(200, 150, 50, 0.35);
+    }
+
+    /* 每日主题 */
+    .day-card .day-theme {
+        font-family: var(--font-heading);
+        color: var(--color-text-secondary);
+        font-size: var(--font-size-small);
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        position: relative;
+        z-index: 3;
+        margin-bottom: var(--space-md);
+        padding-left: var(--space-md);
+    }
+
+    /* 天气标签 */
+    .day-card .weather-badge {
+        display: inline-block;
+        background: linear-gradient(135deg, #2A1A1A, #1F1010);
+        border: 1px solid rgba(180, 130, 60, 0.4);
+        border-radius: 20px;
+        padding: 4px 14px;
+        font-size: var(--font-size-small);
+        color: var(--color-primary);
+        position: relative;
+        z-index: 3;
+        margin-bottom: var(--space-md);
+    }
+
+    .day-card .weather-badge::before {
+        content: '\f0c2';
+        font-family: 'Font Awesome 6 Free';
+        font-weight: 900;
+        margin-right: 5px;
+        font-size: 0.8em;
+    }
+
+    /* ============================================================
+       Activity Item — 巴洛克式活动条目
+       ============================================================ */
+    .activity-item {
+        position: relative;
+        background: rgba(30, 14, 14, 0.6);
+        border: 1px solid rgba(160, 110, 40, 0.25);
+        border-radius: var(--radius-md);
+        padding: var(--space-md) var(--space-md) var(--space-md) 44px;
+        margin-bottom: var(--space-md);
+        z-index: 2;
+        transition: border-color var(--transition-normal), box-shadow var(--transition-normal);
+    }
+
+    .activity-item:hover {
+        border-color: rgba(210, 155, 60, 0.5);
+        box-shadow: 0 0 20px rgba(180, 120, 30, 0.12);
+    }
+
+    /* 活动序号 — 金色圆形徽章 */
+    .activity-item .activity-order {
+        position: absolute;
+        left: 10px;
+        top: 14px;
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #B8862D, #8B5E1C);
+        color: #1A0A0A;
+        font-family: var(--font-heading);
+        font-size: 0.75rem;
+        font-weight: bold;
+        text-align: center;
+        line-height: 26px;
+        box-shadow: 0 0 12px rgba(200, 140, 40, 0.5), 0 2px 4px rgba(0, 0, 0, 0.5);
+        z-index: 3;
+    }
+
+    /* 活动标题 */
+    .activity-item h3 {
+        font-family: var(--font-heading);
+        font-size: var(--font-size-h3);
+        color: var(--color-text-heading);
+        margin-bottom: 4px;
+        letter-spacing: 0.04em;
+    }
+
+    /* 活动时间 */
+    .activity-item .activity-time {
+        font-family: var(--font-mono);
+        font-size: var(--font-size-small);
+        color: var(--color-primary);
+        margin-bottom: 4px;
+        letter-spacing: 0.05em;
+    }
+
+    .activity-item .activity-time::before {
+        content: '\f017';
+        font-family: 'Font Awesome 6 Free';
+        font-weight: 400;
+        margin-right: 6px;
+        font-size: 0.8em;
+    }
+
+    /* 活动描述 */
+    .activity-item .activity-desc {
+        color: var(--color-text);
+        font-size: var(--font-size-body);
+        line-height: var(--line-height);
+        margin-bottom: 6px;
+    }
+
+    /* 活动地点 */
+    .activity-item .activity-location {
+        font-size: var(--font-size-small);
+        color: var(--color-text-secondary);
+    }
+
+    .activity-item .activity-location a {
+        color: var(--color-primary);
+        text-decoration: none;
+        border-bottom: 1px dotted rgba(200, 150, 60, 0.4);
+        transition: border-color var(--transition-fast), color var(--transition-fast);
+    }
+
+    .activity-item .activity-location a:hover {
+        color: #F0D78C;
+        border-bottom-color: #F0D78C;
+    }
+
+    /* 交通信息 */
+    .activity-item .transport-info {
+        font-size: var(--font-size-small);
+        color: var(--color-text-secondary);
+        margin-top: 4px;
+        padding-top: 4px;
+        border-top: 1px dotted rgba(160, 110, 40, 0.2);
+    }
+
+    .activity-item .transport-info::before {
+        content: '\f1b9';
+        font-family: 'Font Awesome 6 Free';
+        font-weight: 900;
+        margin-right: 5px;
+        color: var(--color-primary);
+    }
+
+    /* 餐饮信息 */
+    .activity-item .meal-info {
+        font-size: var(--font-size-small);
+        color: var(--color-text-secondary);
+        margin-top: 4px;
+    }
+
+    .activity-item .meal-info::before {
+        content: '\f2e7';
+        font-family: 'Font Awesome 6 Free';
+        font-weight: 900;
+        margin-right: 5px;
+        color: var(--color-primary);
+    }
+
+    /* ============================================================
+       Day Map — 高德地图容器（禁止filter/opacity/blend-mode）
+       ============================================================ */
+    .day-map {
+        position: relative;
+        z-index: 2;
+        border: 2px solid #5C3A24;
+        border-radius: var(--radius-md);
+        overflow: hidden;
+        margin-top: var(--space-md);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        min-height: 200px;
+        background: #1A0E0E;
+    }
+
+    /* ============================================================
+       酒店信息
+       ============================================================ */
+    .hotel-info {
+        position: relative;
+        background: rgba(25, 10, 10, 0.8);
+        border: 1px solid rgba(180, 130, 60, 0.35);
+        border-radius: var(--radius-md);
+        padding: var(--space-md);
+        margin-top: var(--space-md);
+        z-index: 2;
+        font-size: var(--font-size-small);
+        color: var(--color-text);
+    }
+
+    .hotel-info::before {
+        content: '\f594';
+        font-family: 'Font Awesome 6 Free';
+        font-weight: 900;
+        margin-right: 6px;
+        color: var(--color-primary);
+    }
+
+    /* ============================================================
+       Budget Section — 巴洛克金库风格
+       ============================================================ */
+    .budget-section {
+        position: relative;
+        background: var(--color-surface);
+        border: 2px solid #5C3A24;
+        border-radius: var(--radius-lg);
+        padding: var(--space-xl) var(--space-lg);
+        margin-bottom: var(--space-lg);
+        box-shadow:
+            0 0 30px rgba(0, 0, 0, 0.5),
+            inset 0 1px 0 rgba(200, 155, 70, 0.2);
+    }
+
+    .budget-section::before {
+        content: '';
+        position: absolute;
+        inset: 6px;
+        border: 1px solid rgba(185, 140, 55, 0.3);
+        border-radius: calc(var(--radius-lg) - 3px);
+        pointer-events: none;
+        z-index: 0;
+    }
+
+    /* 预算标题 */
+    .budget-section h2,
+    .budget-section h3 {
+        font-family: var(--font-heading);
+        color: var(--color-text-heading);
+        letter-spacing: 0.06em;
+        position: relative;
+        z-index: 3;
+        text-align: center;
+        margin-bottom: var(--space-lg);
+    }
+
+    .budget-section h2::after,
+    .budget-section h3::after {
+        content: '';
+        display: block;
+        width: 40px;
+        height: 2px;
+        margin: 10px auto 0;
+        background: linear-gradient(90deg, transparent, var(--color-primary), transparent);
+    }
+
+    /* 预算网格 */
+    .budget-grid {
+        position: relative;
+        z-index: 3;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--space-sm);
+    }
+
+    /* 预算单项 */
+    .budget-item {
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        padding: var(--space-sm) var(--space-md);
+        background: rgba(20, 8, 8, 0.5);
+        border: 1px solid rgba(160, 110, 40, 0.2);
+        border-radius: var(--radius-sm);
+        font-size: var(--font-size-body);
+        color: var(--color-text);
+        position: relative;
+        z-index: 3;
+    }
+
+    .budget-item .budget-amount {
+        margin-left: auto;
+    }
+
+    .budget-item::before {
+        content: '●';
+        font-size: 6px;
+        color: var(--color-primary);
+        margin-right: 10px;
+        flex-shrink: 0;
+    }
+
+    /* 预算总计 */
+    .budget-total {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: var(--space-md);
+        margin-top: var(--space-sm);
+        background: linear-gradient(135deg, rgba(40, 18, 10, 0.9), rgba(30, 12, 8, 0.9));
+        border: 2px solid rgba(200, 150, 50, 0.5);
+        border-radius: var(--radius-md);
+        font-family: var(--font-heading);
+        font-size: 1.1rem;
+        color: var(--color-text-heading);
+        letter-spacing: 0.06em;
+        position: relative;
+        z-index: 3;
+        box-shadow: 0 0 20px rgba(180, 120, 30, 0.2);
+    }
+
+    .budget-total::before {
+        content: '\f51e';
+        font-family: 'Font Awesome 6 Free';
+        font-weight: 900;
+        margin-right: 8px;
+        color: var(--color-primary);
+    }
+
+    /* ============================================================
+       XHS Section — 小红书攻略区
+       ============================================================ */
+    .xhs-section {
+        position: relative;
+        background: var(--color-surface);
+        border: 2px solid #5C3A24;
+        border-radius: var(--radius-lg);
+        padding: var(--space-xl) var(--space-lg);
+        margin-bottom: var(--space-lg);
+        box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+    }
+
+    .xhs-section::before {
+        content: '';
+        position: absolute;
+        inset: 6px;
+        border: 1px solid rgba(185, 140, 55, 0.3);
+        border-radius: calc(var(--radius-lg) - 3px);
+        pointer-events: none;
+        z-index: 0;
+    }
+
+    .xhs-section h2,
+    .xhs-section h3 {
+        font-family: var(--font-heading);
+        color: var(--color-text-heading);
+        letter-spacing: 0.06em;
+        position: relative;
+        z-index: 3;
+        text-align: center;
+        margin-bottom: var(--space-lg);
+    }
+
+    .xhs-section h2::after,
+    .xhs-section h3::after {
+        content: '';
+        display: block;
+        width: 50px;
+        height: 2px;
+        margin: 10px auto 0;
+        background: linear-gradient(90deg, transparent, var(--color-secondary), transparent);
+    }
+
+    /* 小红书笔记卡片 */
+    .xhs-note {
+        position: relative;
+        background: rgba(30, 14, 14, 0.6);
+        border: 1px solid rgba(180, 120, 50, 0.3);
+        border-radius: var(--radius-md);
+        padding: var(--space-md);
+        margin-bottom: var(--space-md);
+        z-index: 2;
+        transition: border-color var(--transition-normal), box-shadow var(--transition-normal);
+    }
+
+    .xhs-note:hover {
+        border-color: rgba(220, 160, 60, 0.55);
+        box-shadow: 0 0 18px rgba(180, 120, 30, 0.15);
+    }
+
+    /* 小红书笔记左上角装饰 */
+    .xhs-note::before {
+        content: '\f004';
+        font-family: 'Font Awesome 6 Free';
+        font-weight: 900;
+        position: absolute;
+        top: 8px;
+        right: 12px;
+        font-size: 10px;
+        color: var(--color-secondary);
+        opacity: 0.7;
+        z-index: 3;
+    }
+
+    /* ============================================================
+       Tips Section — 旅行贴士
+       ============================================================ */
+    .tips-section {
+        position: relative;
+        background: var(--color-surface);
+        border: 2px solid #5C3A24;
+        border-radius: var(--radius-lg);
+        padding: var(--space-xl) var(--space-lg);
+        margin-bottom: var(--space-lg);
+        box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+    }
+
+    .tips-section::before {
+        content: '';
+        position: absolute;
+        inset: 6px;
+        border: 1px solid rgba(185, 140, 55, 0.3);
+        border-radius: calc(var(--radius-lg) - 3px);
+        pointer-events: none;
+        z-index: 0;
+    }
+
+    .tips-section h2,
+    .tips-section h3 {
+        font-family: var(--font-heading);
+        color: var(--color-text-heading);
+        letter-spacing: 0.06em;
+        position: relative;
+        z-index: 3;
+        text-align: center;
+        margin-bottom: var(--space-lg);
+    }
+
+    .tips-section h2::after,
+    .tips-section h3::after {
+        content: '';
+        display: block;
+        width: 50px;
+        height: 2px;
+        margin: 10px auto 0;
+        background: linear-gradient(90deg, transparent, var(--color-primary), transparent);
+    }
+
+    /* 贴士列表 */
+    .tips-section ul {
+        position: relative;
+        z-index: 3;
+        list-style: none;
+        padding-left: 0;
+    }
+
+    .tips-section ul li {
+        position: relative;
+        padding: var(--space-sm) 0 var(--space-sm) 28px;
+        border-bottom: 1px dotted rgba(160, 110, 40, 0.2);
+        color: var(--color-text);
+        font-size: var(--font-size-body);
+    }
+
+    .tips-section ul li::before {
+        content: '◆';
+        position: absolute;
+        left: 4px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 8px;
+        color: var(--color-primary);
+        text-shadow: 0 0 6px rgba(210, 160, 60, 0.6);
+    }
+
+    .tips-section ul li:last-child {
+        border-bottom: none;
+    }
+
+    /* ============================================================
+       Emergency Section — 紧急信息（巴洛克警示）
+       ============================================================ */
+    .emergency-section {
+        position: relative;
+        background: linear-gradient(135deg, #2A1010, #1F0A0A);
+        border: 2px solid #6B2A2A;
+        border-radius: var(--radius-lg);
+        padding: var(--space-xl) var(--space-lg);
+        margin-bottom: var(--space-lg);
+        box-shadow:
+            0 0 30px rgba(0, 0, 0, 0.5),
+            0 0 40px rgba(160, 40, 40, 0.1);
+    }
+
+    .emergency-section::before {
+        content: '';
+        position: absolute;
+        inset: 6px;
+        border: 1px solid rgba(200, 100, 80, 0.3);
+        border-radius: calc(var(--radius-lg) - 3px);
+        pointer-events: none;
+        z-index: 0;
+    }
+
+    .emergency-section h2,
+    .emergency-section h3 {
+        font-family: var(--font-heading);
+        color: #F0B890;
+        letter-spacing: 0.06em;
+        position: relative;
+        z-index: 3;
+        text-align: center;
+        margin-bottom: var(--space-md);
+    }
+
+    .emergency-section h2::before {
+        content: '\f071';
+        font-family: 'Font Awesome 6 Free';
+        font-weight: 900;
+        margin-right: 8px;
+        color: #E88860;
+    }
+
+    /* ============================================================
+       Packing Section — 行李清单
+       ============================================================ */
+    .packing-section {
+        position: relative;
+        background: var(--color-surface);
+        border: 2px solid #5C3A24;
+        border-radius: var(--radius-lg);
+        padding: var(--space-xl) var(--space-lg);
+        margin-bottom: var(--space-lg);
+        box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+    }
+
+    .packing-section::before {
+        content: '';
+        position: absolute;
+        inset: 6px;
+        border: 1px solid rgba(185, 140, 55, 0.3);
+        border-radius: calc(var(--radius-lg) - 3px);
+        pointer-events: none;
+        z-index: 0;
+    }
+
+    .packing-section h2,
+    .packing-section h3 {
+        font-family: var(--font-heading);
+        color: var(--color-text-heading);
+        letter-spacing: 0.06em;
+        position: relative;
+        z-index: 3;
+        text-align: center;
+        margin-bottom: var(--space-lg);
+    }
+
+    .packing-section h2::after,
+    .packing-section h3::after {
+        content: '';
+        display: block;
+        width: 40px;
+        height: 2px;
+        margin: 10px auto 0;
+        background: linear-gradient(90deg, transparent, var(--color-primary), transparent);
+    }
+
+    .packing-section ul {
+        position: relative;
+        z-index: 3;
+        list-style: none;
+        padding-left: 0;
+    }
+
+    .packing-section ul li {
+        position: relative;
+        padding: var(--space-xs) 0 var(--space-xs) 26px;
+        color: var(--color-text);
+        font-size: var(--font-size-body);
+    }
+
+    .packing-section ul li::before {
+        content: '\f0a3';
+        font-family: 'Font Awesome 6 Free';
+        font-weight: 900;
+        position: absolute;
+        left: 2px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 9px;
+        color: var(--color-primary);
+    }
+
+    /* ============================================================
+       Verification Badge — 数据可信度徽章（巴洛克纹章风格）
+       ============================================================ */
+    .verification-badge.community-match,
+    .verification-badge.community-only {
+        display: inline-block;
+        font-family: var(--font-heading);
+        font-size: var(--font-size-small);
+        letter-spacing: 0.06em;
+        padding: 5px 14px;
+        border-radius: 20px;
+        position: relative;
+        z-index: 3;
+        margin: var(--space-xs);
+    }
+
+    .verification-badge.community-match {
+        background: linear-gradient(135deg, rgba(30, 40, 20, 0.8), rgba(20, 30, 12, 0.9));
+        border: 1px solid rgba(160, 180, 100, 0.5);
+        color: #C8D8A0;
+    }
+
+    .verification-badge.community-match::before {
+        content: '\f058';
+        font-family: 'Font Awesome 6 Free';
+        font-weight: 900;
+        margin-right: 5px;
+        color: #A0C060;
+    }
+
+    .verification-badge.community-only {
+        background: linear-gradient(135deg, rgba(40, 25, 15, 0.8), rgba(30, 16, 8, 0.9));
+        border: 1px solid rgba(190, 140, 60, 0.5);
+        color: #D8B870;
+    }
+
+    .verification-badge.community-only::before {
+        content: '\f005';
+        font-family: 'Font Awesome 6 Free';
+        font-weight: 900;
+        margin-right: 5px;
+        color: var(--color-primary);
+    }
+
+    /* ============================================================
+       Footer — 巴洛克尾声
+       ============================================================ */
+    footer {
+        position: relative;
+        background: linear-gradient(180deg, #1A0C0C, #120606);
+        border-top: 3px solid #5C3A24;
+        padding: var(--space-xl) var(--space-lg);
+        margin-top: var(--space-xl);
+        text-align: center;
+        color: var(--color-text-secondary);
+        font-size: var(--font-size-small);
+        letter-spacing: 0.06em;
+        box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.5);
+    }
+
+    footer::before {
+        content: '';
+        display: block;
+        width: 80px;
+        height: 3px;
+        margin: 0 auto var(--space-md);
+        background: linear-gradient(90deg,
+                transparent,
+                rgba(200, 150, 60, 0.6) 30%,
+                rgba(220, 170, 80, 0.8) 50%,
+                rgba(200, 150, 60, 0.6) 70%,
+                transparent);
+    }
+
+    /* ============================================================
+       装饰性首字母下沉（用于长文本的第一段）
+       ============================================================ */
+    .activity-desc .drop-cap {
+        float: left;
+        font-family: var(--font-heading);
+        font-size: 3.2rem;
+        line-height: 0.85;
+        margin-right: 8px;
+        margin-top: 2px;
+        color: var(--color-primary);
+        text-shadow: 0 0 12px rgba(200, 150, 50, 0.5);
+    }
+
+    /* ============================================================
+       响应式调整
+       ============================================================ */
+    @media (max-width: 640px) {
+        .hero {
+            padding: var(--space-xl) var(--space-md) var(--space-lg);
+            border-radius: var(--radius-md);
+        }
+
+        .hero h1 {
+            font-size: 1.8rem;
+        }
+
+        .hero::before {
+            inset: 5px;
+            border-radius: calc(var(--radius-md) - 1px);
+        }
+
+        .day-card {
+            padding: var(--space-lg) var(--space-md);
+            border-radius: var(--radius-md);
+        }
+
+        .day-card::before {
+            inset: 4px;
+            border-radius: calc(var(--radius-md) - 2px);
+        }
+
+        .day-card h2 {
+            font-size: 1.3rem;
+        }
+
+        .activity-item {
+            padding: var(--space-sm) var(--space-sm) var(--space-sm) 38px;
+        }
+
+        .activity-item .activity-order {
+            left: 7px;
+            top: 10px;
+            width: 22px;
+            height: 22px;
+            line-height: 22px;
+            font-size: 0.7rem;
+        }
+
+        .budget-section,
+        .xhs-section,
+        .tips-section,
+        .emergency-section,
+        .packing-section {
+            padding: var(--space-lg) var(--space-md);
+            border-radius: var(--radius-md);
+        }
+
+        .budget-section::before,
+        .xhs-section::before,
+        .tips-section::before,
+        .emergency-section::before,
+        .packing-section::before {
+            inset: 4px;
+            border-radius: calc(var(--radius-md) - 2px);
+        }
+
+        .day-map {
+            min-height: 160px;
+        }
+
+        footer {
+            padding: var(--space-lg) var(--space-md);
+        }
+    }
+
+    @media (max-width: 380px) {
+        .hero h1 {
+            font-size: 1.5rem;
+            letter-spacing: 0.04em;
+        }
+
+        .hero .subtitle {
+            font-size: 0.7rem;
+        }
+
+        .day-card h2 {
+            font-size: 1.15rem;
+        }
+
+        .activity-item h3 {
+            font-size: 1rem;
+        }
+
+        :root {
+            --font-size-h1: 1.7rem;
+            --font-size-h2: 1.2rem;
+            --font-size-h3: 0.95rem;
+            --font-size-body: 0.85rem;
+            --font-size-small: 0.72rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block header_decor %}
+<!-- 巴洛克Hero顶部装饰 — 华丽金色卷纹框架 -->
+<div class="hero-top-ornament" aria-hidden="true" style="position:absolute;top:0;left:50%;transform:translateX(-50%);width:70%;max-width:400px;height:4px;background:linear-gradient(90deg,transparent,rgba(200,150,50,0.6) 15%,rgba(230,185,70,0.8) 30%,rgba(240,200,90,0.9) 50%,rgba(230,185,70,0.8) 70%,rgba(200,150,50,0.6) 85%,transparent);z-index:4;pointer-events:none;border-radius:2px;"></div>
+<div class="hero-corner-tl" aria-hidden="true" style="position:absolute;top:8px;left:10px;width:28px;height:28px;border-top:2px solid rgba(210,160,60,0.55);border-left:2px solid rgba(210,160,60,0.55);z-index:4;pointer-events:none;border-radius:2px 0 0 0;"></div>
+<div class="hero-corner-tr" aria-hidden="true" style="position:absolute;top:8px;right:10px;width:28px;height:28px;border-top:2px solid rgba(210,160,60,0.55);border-right:2px solid rgba(210,160,60,0.55);z-index:4;pointer-events:none;border-radius:0 2px 0 0;"></div>
+<div class="hero-corner-bl" aria-hidden="true" style="position:absolute;bottom:8px;left:10px;width:28px;height:28px;border-bottom:2px solid rgba(210,160,60,0.55);border-left:2px solid rgba(210,160,60,0.55);z-index:4;pointer-events:none;border-radius:0 0 0 2px;"></div>
+<div class="hero-corner-br" aria-hidden="true" style="position:absolute;bottom:8px;right:10px;width:28px;height:28px;border-bottom:2px solid rgba(210,160,60,0.55);border-right:2px solid rgba(210,160,60,0.55);z-index:4;pointer-events:none;border-radius:0 0 2px 0;"></div>
+<!-- 角落金色菱形点缀 -->
+<div aria-hidden="true" style="position:absolute;top:16px;left:19px;font-size:7px;color:rgba(220,170,70,0.7);z-index:5;pointer-events:none;">◆</div>
+<div aria-hidden="true" style="position:absolute;top:16px;right:19px;font-size:7px;color:rgba(220,170,70,0.7);z-index:5;pointer-events:none;">◆</div>
+<div aria-hidden="true" style="position:absolute;bottom:16px;left:19px;font-size:7px;color:rgba(220,170,70,0.7);z-index:5;pointer-events:none;">◆</div>
+<div aria-hidden="true" style="position:absolute;bottom:16px;right:19px;font-size:7px;color:rgba(220,170,70,0.7);z-index:5;pointer-events:none;">◆</div>
+{% endblock %}
+
+{% block footer_decor %}
+<!-- 巴洛克Footer装饰 — 金色收束花纹 -->
+<div aria-hidden="true" style="text-align:center;margin-bottom:12px;position:relative;z-index:3;pointer-events:none;">
+    <span style="display:inline-block;width:40px;height:1px;background:rgba(200,150,60,0.5);vertical-align:middle;margin:0 8px;"></span>
+    <span style="display:inline-block;font-size:14px;color:rgba(210,160,60,0.7);vertical-align:middle;">✦</span>
+    <span style="display:inline-block;width:40px;height:1px;background:rgba(200,150,60,0.5);vertical-align:middle;margin:0 8px;"></span>
+    <span style="display:inline-block;font-size:10px;color:rgba(210,160,60,0.5);vertical-align:middle;margin:0 4px;">◆</span>
+    <span style="display:inline-block;width:40px;height:1px;background:rgba(200,150,60,0.5);vertical-align:middle;margin:0 8px;"></span>
+    <span style="display:inline-block;font-size:14px;color:rgba(210,160,60,0.7);vertical-align:middle;">✦</span>
+    <span style="display:inline-block;width:40px;height:1px;background:rgba(200,150,60,0.5);vertical-align:middle;margin:0 8px;"></span>
+</div>
+<!-- 底部卷纹装饰线 -->
+<div aria-hidden="true" style="width:60%;max-width:300px;height:2px;margin:0 auto 8px;background:linear-gradient(90deg,transparent,rgba(180,120,40,0.4) 25%,rgba(210,155,55,0.6) 50%,rgba(180,120,40,0.4) 75%,transparent);border-radius:1px;pointer-events:none;"></div>
+{% endblock %}

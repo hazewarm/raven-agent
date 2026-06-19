@@ -1,0 +1,678 @@
+{% extends "base.html" %}
+
+{% block style_vars %}
+<style>
+:root {
+  --color-bg: #07070f;
+  --color-surface: #111122;
+  --color-primary: #ff2d6e;
+  --color-secondary: #00d4ff;
+  --color-accent: #ffe600;
+  --color-text: #e8e8f2;
+  --color-text-secondary: #9898b8;
+  --color-text-heading: #ffffff;
+  --color-border: rgba(255, 255, 255, 0.08);
+  --color-shadow: rgba(255, 45, 110, 0.25);
+  --font-heading: 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  --font-body: 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  --font-mono: 'SF Mono', 'Cascadia Code', 'Consolas', 'Courier New', monospace;
+  --font-size-h1: clamp(4rem, 11vw, 6rem);
+  --font-size-h2: clamp(2.2rem, 5.5vw, 3rem);
+  --font-size-h3: clamp(1.3rem, 3vw, 1.6rem);
+  --font-size-body: 1rem;
+  --font-size-small: 0.8rem;
+  --line-height: 1.7;
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2.5rem;
+  --space-xxl: 4.5rem;
+  --radius-sm: 2px;
+  --radius-md: 4px;
+  --radius-lg: 8px;
+  --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 0.35s cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+</style>
+{% endblock %}
+
+{% block style_css %}
+<style>
+/* ============================================
+   BOLD MODERN — 大胆现代杂志风格
+   灵感：Wired Magazine × Pentagram
+   ============================================ */
+
+/* --- 限制主容器宽度，避免桌面端铺满全屏 --- */
+main, .container, .max-w-2xl {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+/* --- 全局氛围 --- */
+body {
+  background-color: var(--color-bg);
+  background-image:
+    radial-gradient(ellipse at 15% 10%, rgba(255, 45, 110, 0.06) 0%, transparent 55%),
+    radial-gradient(ellipse at 85% 90%, rgba(0, 212, 255, 0.05) 0%, transparent 55%),
+    radial-gradient(ellipse at 50% 50%, rgba(255, 230, 0, 0.02) 0%, transparent 70%);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: var(--font-size-body);
+  line-height: var(--line-height);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* --- Hero 封面区 --- */
+.hero {
+  position: relative;
+  background: var(--color-surface);
+  border-bottom: 4px solid var(--color-primary);
+  padding: var(--space-xxl) var(--space-lg) var(--space-xl);
+  margin-bottom: var(--space-xl);
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 18px), calc(100% - 50px) 100%, 0 100%);
+  overflow: hidden;
+  z-index: 1;
+}
+
+.hero::before {
+  content: '';
+  position: absolute;
+  top: -60px;
+  right: -60px;
+  width: 280px;
+  height: 280px;
+  border: 3px solid rgba(255, 45, 110, 0.18);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.hero::after {
+  content: '';
+  position: absolute;
+  bottom: -30px;
+  left: -40px;
+  width: 160px;
+  height: 160px;
+  background: rgba(0, 212, 255, 0.07);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.hero h1 {
+  font-family: var(--font-heading);
+  font-size: var(--font-size-h1);
+  font-weight: 900;
+  color: var(--color-text-heading);
+  letter-spacing: -0.03em;
+  line-height: 0.9;
+  text-transform: uppercase;
+  position: relative;
+  z-index: 2;
+  margin: 0 0 var(--space-sm);
+  text-shadow: 0 0 80px rgba(255, 45, 110, 0.35);
+}
+
+.hero .subtitle {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-small);
+  color: var(--color-accent);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  position: relative;
+  z-index: 2;
+  display: inline-block;
+  padding: var(--space-xs) var(--space-md);
+  border: 1px solid rgba(255, 230, 0, 0.3);
+  background: rgba(255, 230, 0, 0.04);
+  margin-bottom: var(--space-lg);
+}
+
+.hero .weather-overview,
+.hero .budget-overview {
+  position: relative;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-small);
+  color: var(--color-secondary);
+  letter-spacing: 0.08em;
+  padding: var(--space-sm) var(--space-md);
+  background: rgba(0, 212, 255, 0.05);
+  border-left: 3px solid var(--color-secondary);
+  margin-right: var(--space-md);
+  margin-bottom: var(--space-sm);
+}
+
+.hero .budget-overview {
+  color: var(--color-primary);
+  border-left-color: var(--color-primary);
+  background: rgba(255, 45, 110, 0.05);
+}
+
+/* --- Day Card 每日行程卡片 --- */
+.day-card {
+  position: relative;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  padding: var(--space-xl) var(--space-lg);
+  margin-bottom: var(--space-xl);
+  clip-path: polygon(0 12px, 12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%);
+  transition: transform var(--transition-normal), box-shadow var(--transition-normal), border-color var(--transition-normal);
+  z-index: 1;
+}
+
+.day-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 48px rgba(255, 45, 110, 0.12), 0 0 0 1px rgba(255, 45, 110, 0.15);
+  border-color: rgba(255, 45, 110, 0.3);
+}
+
+.day-card h2 {
+  font-family: var(--font-heading);
+  font-size: var(--font-size-h2);
+  font-weight: 900;
+  color: var(--color-primary);
+  letter-spacing: -0.02em;
+  margin: 0 0 var(--space-xs);
+  line-height: 1;
+  position: relative;
+  display: inline-block;
+}
+
+.day-card h2::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 60%;
+  height: 4px;
+  background: var(--color-accent);
+}
+
+.day-card .day-theme {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-small);
+  color: var(--color-accent);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin-bottom: var(--space-lg);
+  display: block;
+}
+
+.day-card .weather-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-small);
+  color: var(--color-secondary);
+  background: rgba(0, 212, 255, 0.06);
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-sm);
+  letter-spacing: 0.06em;
+  margin-bottom: var(--space-md);
+}
+
+/* --- Activity Item 活动项 --- */
+.activity-item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  padding: var(--space-md) 0;
+  border-bottom: 1px solid var(--color-border);
+  align-items: flex-start;
+  transition: background var(--transition-fast);
+}
+
+.activity-item:last-child {
+  border-bottom: none;
+}
+
+.activity-item:hover {
+  background: rgba(255, 255, 255, 0.015);
+}
+
+.activity-item .activity-order {
+  flex-shrink: 0;
+  width: 42px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-bg);
+  background: var(--color-primary);
+  border-radius: var(--radius-sm);
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.activity-item h3 {
+  font-family: var(--font-heading);
+  font-size: var(--font-size-h3);
+  font-weight: 700;
+  color: var(--color-text-heading);
+  margin: 0 0 var(--space-xs);
+  letter-spacing: -0.01em;
+}
+
+.activity-item .activity-time {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-small);
+  color: var(--color-secondary);
+  letter-spacing: 0.08em;
+  display: inline-block;
+  padding: 2px 8px;
+  background: rgba(0, 212, 255, 0.06);
+  border-radius: var(--radius-sm);
+  margin-bottom: var(--space-xs);
+}
+
+.activity-item .activity-desc {
+  color: var(--color-text);
+  font-size: var(--font-size-body);
+  margin-bottom: var(--space-sm);
+  line-height: var(--line-height);
+}
+
+.activity-item .activity-location {
+  font-size: var(--font-size-small);
+  color: var(--color-text-secondary);
+}
+
+.activity-item .activity-location a {
+  color: var(--color-secondary);
+  text-decoration: none;
+  border-bottom: 1px dotted var(--color-secondary);
+  transition: color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.activity-item .activity-location a:hover {
+  color: var(--color-accent);
+  border-bottom-color: var(--color-accent);
+}
+
+.activity-item .transport-info,
+.activity-item .meal-info {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-small);
+  color: var(--color-text-secondary);
+  background: rgba(255, 255, 255, 0.03);
+  padding: 3px 10px;
+  border-radius: var(--radius-sm);
+  margin-top: var(--space-xs);
+  margin-right: var(--space-sm);
+  letter-spacing: 0.04em;
+}
+
+/* --- Day Map 地图容器 --- */
+.day-map {
+  width: 100%;
+  height: 220px;
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+  margin-top: var(--space-lg);
+  overflow: hidden;
+  background: #0d0d1a;
+  box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.4);
+}
+
+/* --- Hotel Info --- */
+.hotel-info {
+  margin-top: var(--space-lg);
+  padding: var(--space-md);
+  background: rgba(255, 230, 0, 0.03);
+  border-left: 3px solid var(--color-accent);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-small);
+  color: var(--color-text-secondary);
+  letter-spacing: 0.04em;
+}
+
+/* --- Budget Section 预算 --- */
+.budget-section {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  padding: var(--space-xl) var(--space-lg);
+  margin-bottom: var(--space-xl);
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 10px), calc(100% - 36px) 100%, 0 100%);
+}
+
+.budget-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: var(--space-md);
+}
+
+.budget-item {
+  padding: var(--space-md);
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  text-align: center;
+  transition: border-color var(--transition-fast), background var(--transition-fast);
+}
+
+.budget-item:hover {
+  border-color: var(--color-primary);
+  background: rgba(255, 45, 110, 0.04);
+}
+
+.budget-item .budget-label {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-small);
+  color: var(--color-text-secondary);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: var(--space-xs);
+}
+
+.budget-item .budget-amount {
+  font-family: var(--font-heading);
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: var(--color-primary);
+}
+
+.budget-total {
+  margin-top: var(--space-lg);
+  padding: var(--space-md) var(--space-lg);
+  background: var(--color-primary);
+  color: #ffffff;
+  font-family: var(--font-heading);
+  font-size: 1.4rem;
+  font-weight: 900;
+  text-align: center;
+  letter-spacing: -0.01em;
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 6px), calc(100% - 20px) 100%, 0 100%);
+}
+
+/* --- XHS 小红书攻略区 --- */
+.xhs-section {
+  margin-bottom: var(--space-xl);
+}
+
+.xhs-note {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  padding: var(--space-lg);
+  margin-bottom: var(--space-md);
+  position: relative;
+  clip-path: polygon(0 0, 100% 6px, 100% 100%, 6px 100%);
+  transition: transform var(--transition-normal), box-shadow var(--transition-normal);
+}
+
+.xhs-note:hover {
+  transform: translateX(4px);
+  box-shadow: -8px 8px 0 rgba(255, 45, 110, 0.12);
+}
+
+.xhs-note::before {
+  content: '📕';
+  position: absolute;
+  top: -10px;
+  right: 14px;
+  font-size: 1.6rem;
+  z-index: 2;
+}
+
+/* --- Tips Section 贴士 --- */
+.tips-section {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  padding: var(--space-xl) var(--space-lg);
+  margin-bottom: var(--space-xl);
+  border-left: 6px solid var(--color-accent);
+}
+
+.tips-section ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.tips-section li {
+  position: relative;
+  padding: var(--space-sm) 0 var(--space-sm) var(--space-xl);
+  color: var(--color-text);
+  font-size: var(--font-size-body);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.tips-section li:last-child {
+  border-bottom: none;
+}
+
+.tips-section li::before {
+  content: '◆';
+  position: absolute;
+  left: 0;
+  top: var(--space-sm);
+  color: var(--color-primary);
+  font-size: 0.6rem;
+}
+
+/* --- Emergency Section 紧急信息 --- */
+.emergency-section {
+  background: rgba(255, 45, 110, 0.06);
+  border: 2px solid var(--color-primary);
+  padding: var(--space-lg);
+  margin-bottom: var(--space-xl);
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 8px), calc(100% - 28px) 100%, 0 100%);
+}
+
+.emergency-section h3 {
+  color: var(--color-primary);
+  font-family: var(--font-heading);
+  font-weight: 900;
+  margin-bottom: var(--space-md);
+}
+
+/* --- Packing Section 行李清单 --- */
+.packing-section {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  padding: var(--space-xl) var(--space-lg);
+  margin-bottom: var(--space-xl);
+}
+
+.packing-section ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  columns: 2;
+  column-gap: var(--space-lg);
+}
+
+.packing-section li {
+  padding: var(--space-xs) 0;
+  color: var(--color-text);
+  font-size: var(--font-size-body);
+  break-inside: avoid;
+}
+
+.packing-section li::before {
+  content: '☐ ';
+  color: var(--color-secondary);
+  font-size: 0.9rem;
+}
+
+/* --- Verification Badge 数据可信度徽章 --- */
+.verification-badge.community-match,
+.verification-badge.community-only {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: var(--space-sm) var(--space-md);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-small);
+  letter-spacing: 0.06em;
+  border-radius: var(--radius-sm);
+  background: rgba(0, 212, 255, 0.08);
+  color: var(--color-secondary);
+  border: 1px solid rgba(0, 212, 255, 0.25);
+}
+
+.verification-badge.community-only {
+  background: rgba(255, 230, 0, 0.06);
+  color: var(--color-accent);
+  border-color: rgba(255, 230, 0, 0.25);
+}
+
+/* --- Footer --- */
+footer {
+  background: var(--color-surface);
+  border-top: 3px solid var(--color-primary);
+  padding: var(--space-xl) var(--space-lg);
+  margin-top: var(--space-xxl);
+  text-align: center;
+  position: relative;
+  clip-path: polygon(0 8px, 8px 0, 100% 0, 100% 100%, 0 100%);
+}
+
+/* --- 响应式设计 --- */
+@media (max-width: 640px) {
+  .hero {
+    padding: var(--space-xl) var(--space-md) var(--space-lg);
+    clip-path: polygon(0 0, 100% 0, 100% calc(100% - 10px), calc(100% - 30px) 100%, 0 100%);
+  }
+
+  .hero h1 {
+    font-size: clamp(3rem, 13vw, 4.5rem);
+  }
+
+  .hero::before {
+    width: 160px;
+    height: 160px;
+    top: -40px;
+    right: -40px;
+  }
+
+  .hero::after {
+    width: 100px;
+    height: 100px;
+    bottom: -20px;
+    left: -20px;
+  }
+
+  .day-card {
+    padding: var(--space-lg) var(--space-md);
+    clip-path: polygon(0 8px, 8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%);
+  }
+
+  .activity-item {
+    flex-direction: column;
+    gap: var(--space-sm);
+  }
+
+  .activity-item .activity-order {
+    width: 34px;
+    height: 34px;
+    font-size: 1rem;
+  }
+
+  .budget-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-sm);
+  }
+
+  .packing-section ul {
+    columns: 1;
+  }
+
+  .budget-total {
+    font-size: 1.1rem;
+    padding: var(--space-sm) var(--space-md);
+  }
+
+  .xhs-note {
+    clip-path: polygon(0 0, 100% 4px, 100% 100%, 4px 100%);
+  }
+}
+
+@media (max-width: 400px) {
+  .hero h1 {
+    font-size: 2.6rem;
+  }
+
+  .hero .weather-overview,
+  .hero .budget-overview {
+    display: block;
+    margin-right: 0;
+    margin-bottom: var(--space-sm);
+  }
+
+  .day-card h2 {
+    font-size: 1.6rem;
+  }
+
+  .budget-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .hero::before,
+  .hero::after {
+    display: none;
+  }
+}
+
+/* --- 动效增强 --- */
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(255, 45, 110, 0.15);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(255, 45, 110, 0.3);
+  }
+}
+
+.hero h1 {
+  animation: pulse-glow 4s ease-in-out infinite;
+}
+
+/* --- 链接风格 --- */
+.xhs-note a,
+footer a {
+  color: var(--color-secondary);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+.xhs-note a:hover,
+footer a:hover {
+  color: var(--color-accent);
+}
+
+/* --- 选择文本高亮 --- */
+::selection {
+  background: var(--color-primary);
+  color: #ffffff;
+}
+</style>
+{% endblock %}
+
+{% block header_decor %}
+<!-- 几何装饰元素：Hero 区域 -->
+<div style="position:absolute;top:18%;right:8%;width:70px;height:70px;border:3px solid rgba(255,230,0,0.2);transform:rotate(25deg);pointer-events:none;z-index:1;"></div>
+<div style="position:absolute;bottom:22%;left:5%;width:50px;height:50px;background:rgba(0,212,255,0.06);transform:rotate(45deg);pointer-events:none;z-index:1;"></div>
+<div style="position:absolute;top:40%;left:12%;width:90px;height:2px;background:rgba(255,45,110,0.3);transform:rotate(-15deg);pointer-events:none;z-index:1;"></div>
+<div style="position:absolute;top:8%;left:4%;font-size:5rem;color:rgba(255,45,110,0.04);font-weight:900;pointer-events:none;z-index:0;line-height:1;">◆</div>
+{% endblock %}
+
+{% block footer_decor %}
+<!-- 几何装饰元素：Footer 区域 -->
+<div style="position:absolute;top:-16px;right:20%;width:32px;height:32px;background:var(--color-primary);transform:rotate(45deg);pointer-events:none;z-index:2;border-radius:2px;"></div>
+<div style="position:absolute;bottom:18%;left:6%;width:60px;height:60px;border:2px dashed rgba(255,230,0,0.15);transform:rotate(10deg);pointer-events:none;z-index:1;border-radius:50%;"></div>
+<div style="position:absolute;top:30%;right:8%;width:100px;height:1px;background:rgba(0,212,255,0.2);transform:rotate(-8deg);pointer-events:none;z-index:1;"></div>
+{% endblock %}

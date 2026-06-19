@@ -1,0 +1,845 @@
+{% extends "base.html" %}
+
+{% block style_vars %}
+<style>
+:root {
+  /* === 液态数字形态主义 配色系统 === */
+  --color-bg: #08061a;
+  --color-surface: rgba(20, 16, 50, 0.65);
+  --color-primary: #b44dff;
+  --color-secondary: #3b82f6;
+  --color-accent: #22d3bb;
+  --color-text: #e8e0f0;
+  --color-text-secondary: #b0a0c8;
+  --color-text-heading: #f5f0fd;
+  --color-border: rgba(180, 77, 255, 0.25);
+  --color-shadow: rgba(180, 77, 255, 0.22);
+  --font-heading: 'Noto Serif SC', 'Georgia', 'Times New Roman', serif;
+  --font-body: 'Noto Sans SC', 'Helvetica Neue', 'PingFang SC', sans-serif;
+  --font-mono: 'SF Mono', 'Cascadia Code', 'Consolas', 'Noto Sans SC', monospace;
+  --font-size-h1: 2.6rem;
+  --font-size-h2: 1.55rem;
+  --font-size-h3: 1.1rem;
+  --font-size-body: 0.95rem;
+  --font-size-small: 0.78rem;
+  --line-height: 1.75;
+  --space-xs: 0.35rem;
+  --space-sm: 0.7rem;
+  --space-md: 1.15rem;
+  --space-lg: 1.5rem;
+  --space-xl: 1.25rem;
+  --space-xxl: 3.5rem;
+  --radius-sm: 8px;
+  --radius-md: 16px;
+  --radius-lg: 28px;
+  --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+</style>
+{% endblock %}
+
+{% block style_css %}
+<style>
+/* === 容器宽度约束 === */
+main, .container, .max-w-2xl {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+/* === 全局页面背景：多层流体渐变 === */
+body {
+  background-color: #08061a;
+  background-image:
+    radial-gradient(ellipse at 18% 12%, rgba(180, 77, 255, 0.18) 0%, transparent 55%),
+    radial-gradient(ellipse at 78% 22%, rgba(59, 130, 246, 0.16) 0%, transparent 50%),
+    radial-gradient(ellipse at 35% 65%, rgba(34, 211, 187, 0.10) 0%, transparent 48%),
+    radial-gradient(ellipse at 72% 75%, rgba(180, 77, 255, 0.12) 0%, transparent 52%),
+    radial-gradient(ellipse at 50% 40%, rgba(139, 92, 246, 0.09) 0%, transparent 60%),
+    linear-gradient(172deg, #0c0828 0%, #0a0620 18%, #0d0a2e 40%, #08061c 65%, #0b0826 100%);
+  background-attachment: fixed;
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: var(--font-size-body);
+  line-height: var(--line-height);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* === Hero 封面区 === */
+.hero {
+  position: relative;
+  background: transparent;
+  border: 1px solid rgba(180, 77, 255, 0.28);
+  border-radius: var(--radius-lg);
+  padding: var(--space-xl) var(--space-lg);
+  margin-bottom: var(--space-xl);
+  overflow: hidden;
+  box-shadow:
+    0 0 60px rgba(180, 77, 255, 0.13),
+    0 0 120px rgba(59, 130, 246, 0.07),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  background:
+    radial-gradient(ellipse at 30% 15%, rgba(180, 77, 255, 0.13) 0%, transparent 60%),
+    radial-gradient(ellipse at 75% 70%, rgba(34, 211, 187, 0.08) 0%, transparent 55%),
+    rgba(14, 10, 38, 0.55);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.hero h1 {
+  font-family: var(--font-heading);
+  font-size: var(--font-size-h1);
+  color: var(--color-text-heading);
+  letter-spacing: 0.04em;
+  text-shadow:
+    0 0 40px rgba(180, 77, 255, 0.45),
+    0 0 80px rgba(139, 92, 246, 0.25),
+    0 0 4px rgba(200, 160, 255, 0.5);
+  animation: liquidGlow 3.2s ease-in-out infinite alternate;
+  position: relative;
+  z-index: 2;
+}
+
+.hero .subtitle {
+  font-family: var(--font-body);
+  font-size: var(--font-size-small);
+  color: var(--color-text-secondary);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  position: relative;
+  z-index: 2;
+}
+
+.hero .weather-overview,
+.hero .budget-overview {
+  position: relative;
+  z-index: 2;
+  background: rgba(18, 14, 44, 0.5);
+  border: 1px solid rgba(180, 77, 255, 0.2);
+  border-radius: var(--radius-sm);
+  padding: var(--space-sm) var(--space-md);
+  font-size: var(--font-size-small);
+  color: var(--color-text-secondary);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+/* === Hero 液态装饰气泡容器 === */
+.hero .liquid-bubbles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.hero .liquid-bubble {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, rgba(180, 77, 255, 0.25) 0%, rgba(59, 130, 246, 0.08) 50%, transparent 70%);
+  animation: floatBubble 7s ease-in-out infinite;
+  opacity: 0.7;
+}
+
+.hero .liquid-bubble:nth-child(1) {
+  width: 110px;
+  height: 110px;
+  top: -25px;
+  right: -20px;
+  animation-delay: 0s;
+  animation-duration: 7.5s;
+}
+
+.hero .liquid-bubble:nth-child(2) {
+  width: 70px;
+  height: 70px;
+  top: 55%;
+  left: -18px;
+  animation-delay: 1.8s;
+  animation-duration: 6.2s;
+  background: radial-gradient(circle at 40% 35%, rgba(34, 211, 187, 0.22) 0%, rgba(59, 130, 246, 0.06) 50%, transparent 70%);
+}
+
+.hero .liquid-bubble:nth-child(3) {
+  width: 48px;
+  height: 48px;
+  bottom: 20%;
+  right: 15%;
+  animation-delay: 3.2s;
+  animation-duration: 5.5s;
+  background: radial-gradient(circle at 30% 30%, rgba(139, 92, 246, 0.3) 0%, rgba(180, 77, 255, 0.06) 50%, transparent 70%);
+}
+
+.hero .liquid-bubble:nth-child(4) {
+  width: 85px;
+  height: 85px;
+  top: 20%;
+  left: 35%;
+  animation-delay: 4.6s;
+  animation-duration: 8.3s;
+  opacity: 0.45;
+  background: radial-gradient(circle at 38% 32%, rgba(59, 130, 246, 0.2) 0%, rgba(34, 211, 187, 0.07) 50%, transparent 70%);
+}
+
+.hero .liquid-bubble:nth-child(5) {
+  width: 36px;
+  height: 36px;
+  top: 10%;
+  left: 8%;
+  animation-delay: 2.1s;
+  animation-duration: 4.8s;
+  opacity: 0.6;
+  background: radial-gradient(circle at 35% 30%, rgba(180, 77, 255, 0.35) 0%, transparent 65%);
+}
+
+/* === 日行程卡片 - 液态玻璃态 === */
+.day-card {
+  position: relative;
+  background: rgba(16, 12, 42, 0.55);
+  border: 1px solid rgba(180, 77, 255, 0.2);
+  border-radius: var(--radius-md);
+  padding: var(--space-lg);
+  margin-bottom: var(--space-lg);
+  overflow: hidden;
+  box-shadow:
+    0 0 35px rgba(180, 77, 255, 0.08),
+    0 0 2px rgba(180, 77, 255, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: box-shadow var(--transition-normal), border-color var(--transition-normal);
+}
+
+.day-card:hover {
+  border-color: rgba(180, 77, 255, 0.38);
+  box-shadow:
+    0 0 50px rgba(180, 77, 255, 0.14),
+    0 0 3px rgba(180, 77, 255, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+/* day-card 液态光点装饰 */
+.day-card::before {
+  content: '';
+  position: absolute;
+  top: -30px;
+  right: -30px;
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 35%, rgba(180, 77, 255, 0.10) 0%, transparent 65%);
+  pointer-events: none;
+  z-index: 0;
+  animation: floatBubble 6s ease-in-out infinite;
+}
+
+.day-card::after {
+  content: '';
+  position: absolute;
+  bottom: -18px;
+  left: 15%;
+  width: 55px;
+  height: 55px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, rgba(34, 211, 187, 0.09) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+  animation: floatBubble 5.2s ease-in-out 2.5s infinite;
+}
+
+.day-card h2 {
+  font-family: var(--font-heading);
+  font-size: var(--font-size-h2);
+  color: var(--color-text-heading);
+  position: relative;
+  z-index: 1;
+  text-shadow: 0 0 18px rgba(180, 77, 255, 0.3);
+  display: inline-block;
+}
+
+/* 标题液态下划线 */
+.day-card h2::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, rgba(180, 77, 255, 0.55) 0%, rgba(59, 130, 246, 0.35) 50%, transparent 100%);
+  border-radius: 1px;
+}
+
+.day-card .day-theme {
+  font-family: var(--font-body);
+  font-size: var(--font-size-small);
+  color: var(--color-accent);
+  letter-spacing: 0.06em;
+  position: relative;
+  z-index: 1;
+}
+
+.day-card .weather-badge {
+  display: inline-block;
+  background: rgba(59, 130, 246, 0.15);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  border-radius: 20px;
+  padding: 3px 12px;
+  font-size: var(--font-size-small);
+  color: #93c5fd;
+  position: relative;
+  z-index: 1;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+/* === 活动条目 === */
+.activity-item {
+  position: relative;
+  z-index: 1;
+  background: rgba(20, 15, 48, 0.4);
+  border: 1px solid rgba(180, 77, 255, 0.12);
+  border-radius: var(--radius-sm);
+  padding: var(--space-md);
+  margin-top: var(--space-sm);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.activity-item:hover {
+  border-color: rgba(180, 77, 255, 0.3);
+  box-shadow: 0 0 22px rgba(180, 77, 255, 0.08);
+}
+
+.activity-item h3 {
+  font-family: var(--font-heading);
+  font-size: var(--font-size-h3);
+  color: var(--color-text-heading);
+  margin-bottom: var(--space-xs);
+}
+
+.activity-item .activity-order {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(180, 77, 255, 0.35), rgba(59, 130, 246, 0.25));
+  border: 1px solid rgba(180, 77, 255, 0.4);
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #f5f0fd;
+  margin-right: var(--space-xs);
+  flex-shrink: 0;
+}
+
+.activity-item .activity-time {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-small);
+  color: var(--color-accent);
+  letter-spacing: 0.03em;
+}
+
+.activity-item .activity-desc {
+  color: var(--color-text);
+  line-height: var(--line-height);
+}
+
+.activity-item .activity-location {
+  font-size: var(--font-size-small);
+  color: var(--color-text-secondary);
+}
+
+.activity-item .activity-location a {
+  color: var(--color-primary);
+  text-decoration: none;
+  border-bottom: 1px dotted rgba(180, 77, 255, 0.4);
+  transition: border-color var(--transition-fast), color var(--transition-fast);
+}
+
+.activity-item .activity-location a:hover {
+  color: #d08fff;
+  border-bottom-color: rgba(208, 143, 255, 0.7);
+}
+
+.activity-item .transport-info,
+.activity-item .meal-info {
+  font-size: var(--font-size-small);
+  color: var(--color-text-secondary);
+  margin-top: var(--space-xs);
+  padding-left: var(--space-sm);
+  border-left: 2px solid rgba(180, 77, 255, 0.25);
+}
+
+/* === 日行程地图 === */
+.day-map {
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(180, 77, 255, 0.18);
+  overflow: hidden;
+  margin-top: var(--space-md);
+  position: relative;
+  z-index: 1;
+  box-shadow: 0 0 20px rgba(180, 77, 255, 0.06);
+  background: #0d0a28;
+}
+
+/* === 酒店信息 === */
+.hotel-info {
+  background: rgba(20, 15, 48, 0.45);
+  border: 1px solid rgba(180, 77, 255, 0.15);
+  border-radius: var(--radius-sm);
+  padding: var(--space-md);
+  margin-top: var(--space-sm);
+  position: relative;
+  z-index: 1;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+/* === 预算区域 === */
+.budget-section {
+  position: relative;
+  background: rgba(16, 12, 42, 0.5);
+  border: 1px solid rgba(180, 77, 255, 0.2);
+  border-radius: var(--radius-md);
+  padding: var(--space-lg);
+  margin-bottom: var(--space-lg);
+  overflow: hidden;
+  box-shadow:
+    0 0 35px rgba(180, 77, 255, 0.07),
+    inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+/* 预算模块液态光点 */
+.budget-section::before {
+  content: '';
+  position: absolute;
+  top: -20px;
+  left: 10%;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 38% 32%, rgba(34, 211, 187, 0.12) 0%, transparent 58%);
+  pointer-events: none;
+  z-index: 0;
+  animation: floatBubble 6.8s ease-in-out 1.2s infinite;
+}
+
+.budget-section::after {
+  content: '';
+  position: absolute;
+  bottom: -25px;
+  right: 20%;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, rgba(180, 77, 255, 0.11) 0%, transparent 55%);
+  pointer-events: none;
+  z-index: 0;
+  animation: floatBubble 5.6s ease-in-out 3.8s infinite;
+}
+
+.budget-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: var(--space-sm);
+  position: relative;
+  z-index: 1;
+}
+
+.budget-item {
+  background: rgba(20, 15, 48, 0.45);
+  border: 1px solid rgba(180, 77, 255, 0.15);
+  border-radius: var(--radius-sm);
+  padding: var(--space-sm) var(--space-md);
+  font-size: var(--font-size-small);
+  color: var(--color-text-secondary);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.budget-total {
+  grid-column: 1 / -1;
+  background: rgba(180, 77, 255, 0.1);
+  border: 1px solid rgba(180, 77, 255, 0.3);
+  border-radius: var(--radius-sm);
+  padding: var(--space-md);
+  font-weight: 700;
+  font-size: var(--font-size-h3);
+  color: var(--color-text-heading);
+  text-align: center;
+  text-shadow: 0 0 16px rgba(180, 77, 255, 0.3);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+/* === 小红书攻略区 === */
+.xhs-section {
+  position: relative;
+  background: rgba(16, 12, 42, 0.5);
+  border: 1px solid rgba(180, 77, 255, 0.2);
+  border-radius: var(--radius-md);
+  padding: var(--space-lg);
+  margin-bottom: var(--space-lg);
+  overflow: hidden;
+  box-shadow:
+    0 0 35px rgba(180, 77, 255, 0.07),
+    inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.xhs-section::before {
+  content: '';
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 38% 32%, rgba(255, 80, 120, 0.15) 0%, transparent 55%);
+  pointer-events: none;
+  z-index: 0;
+  animation: floatBubble 5s ease-in-out 0.8s infinite;
+}
+
+.xhs-note {
+  position: relative;
+  z-index: 1;
+  background: rgba(20, 15, 48, 0.4);
+  border: 1px solid rgba(180, 77, 255, 0.12);
+  border-radius: var(--radius-sm);
+  padding: var(--space-md);
+  margin-top: var(--space-sm);
+  transition: border-color var(--transition-fast);
+}
+
+.xhs-note:hover {
+  border-color: rgba(180, 77, 255, 0.32);
+  box-shadow: 0 0 18px rgba(180, 77, 255, 0.07);
+}
+
+/* === 旅行贴士区 === */
+.tips-section {
+  position: relative;
+  background: rgba(16, 12, 42, 0.5);
+  border: 1px solid rgba(180, 77, 255, 0.2);
+  border-radius: var(--radius-md);
+  padding: var(--space-lg);
+  margin-bottom: var(--space-lg);
+  overflow: hidden;
+  box-shadow:
+    0 0 35px rgba(180, 77, 255, 0.07),
+    inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.tips-section::before {
+  content: '';
+  position: absolute;
+  bottom: -20px;
+  left: 25%;
+  width: 55px;
+  height: 55px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 38% 32%, rgba(59, 130, 246, 0.13) 0%, transparent 55%);
+  pointer-events: none;
+  z-index: 0;
+  animation: floatBubble 7.2s ease-in-out 2s infinite;
+}
+
+.tips-section ul {
+  position: relative;
+  z-index: 1;
+  list-style: none;
+  padding-left: 0;
+}
+
+.tips-section ul li {
+  position: relative;
+  padding-left: var(--space-lg);
+  margin-bottom: var(--space-sm);
+  color: var(--color-text);
+  line-height: var(--line-height);
+}
+
+/* 液态菱形标记 */
+.tips-section ul li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.55em;
+  width: 8px;
+  height: 8px;
+  background: linear-gradient(135deg, rgba(180, 77, 255, 0.7), rgba(59, 130, 246, 0.5));
+  border-radius: 1.5px;
+  transform: rotate(45deg);
+  box-shadow: 0 0 8px rgba(180, 77, 255, 0.4);
+}
+
+/* === 紧急信息区 === */
+.emergency-section {
+  position: relative;
+  background: rgba(20, 10, 35, 0.55);
+  border: 1px solid rgba(255, 80, 120, 0.28);
+  border-radius: var(--radius-md);
+  padding: var(--space-lg);
+  margin-bottom: var(--space-lg);
+  overflow: hidden;
+  box-shadow:
+    0 0 40px rgba(255, 80, 120, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  animation: emergencyPulse 3.5s ease-in-out infinite;
+}
+
+.emergency-section::before {
+  content: '';
+  position: absolute;
+  top: -15px;
+  right: -15px;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 38% 32%, rgba(255, 80, 120, 0.18) 0%, transparent 55%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* === 行李清单区 === */
+.packing-section {
+  position: relative;
+  background: rgba(16, 12, 42, 0.5);
+  border: 1px solid rgba(180, 77, 255, 0.2);
+  border-radius: var(--radius-md);
+  padding: var(--space-lg);
+  margin-bottom: var(--space-lg);
+  overflow: hidden;
+  box-shadow:
+    0 0 35px rgba(180, 77, 255, 0.07),
+    inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.packing-section::before {
+  content: '';
+  position: absolute;
+  top: 10px;
+  left: 15%;
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 38% 32%, rgba(34, 211, 187, 0.11) 0%, transparent 55%);
+  pointer-events: none;
+  z-index: 0;
+  animation: floatBubble 6.4s ease-in-out 4.5s infinite;
+}
+
+/* === 数据可信度徽章 === */
+.verification-badge.community-match,
+.verification-badge.community-only {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--font-size-small);
+  padding: 4px 12px;
+  border-radius: 20px;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  letter-spacing: 0.03em;
+}
+
+.verification-badge.community-match {
+  background: rgba(34, 211, 187, 0.12);
+  border: 1px solid rgba(34, 211, 187, 0.35);
+  color: #5eeadb;
+  text-shadow: 0 0 8px rgba(34, 211, 187, 0.3);
+}
+
+.verification-badge.community-only {
+  background: rgba(180, 77, 255, 0.1);
+  border: 1px solid rgba(180, 77, 255, 0.3);
+  color: #c99dff;
+  text-shadow: 0 0 8px rgba(180, 77, 255, 0.3);
+}
+
+/* === 页脚 === */
+footer {
+  position: relative;
+  background: rgba(12, 8, 30, 0.6);
+  border: 1px solid rgba(180, 77, 255, 0.15);
+  border-radius: var(--radius-md);
+  padding: var(--space-lg);
+  text-align: center;
+  font-size: var(--font-size-small);
+  color: var(--color-text-secondary);
+  overflow: hidden;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+footer::before {
+  content: '';
+  position: absolute;
+  top: -30px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 120px;
+  height: 60px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at 50% 30%, rgba(180, 77, 255, 0.10) 0%, transparent 65%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* === Footer 波浪装饰 === */
+footer .liquid-wave-footer {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 40px;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.35;
+  background:
+    radial-gradient(ellipse at 20% 100%, rgba(180, 77, 255, 0.2) 0%, transparent 50%),
+    radial-gradient(ellipse at 65% 100%, rgba(59, 130, 246, 0.18) 0%, transparent 45%),
+    radial-gradient(ellipse at 85% 100%, rgba(34, 211, 187, 0.12) 0%, transparent 40%);
+  animation: waveShift 8s ease-in-out infinite;
+}
+
+/* === 段落与通用文本 === */
+.xhs-note p,
+.emergency-section p {
+  position: relative;
+  z-index: 1;
+}
+
+/* === 动画关键帧 === */
+@keyframes floatBubble {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  25% {
+    transform: translate(8px, -14px) scale(1.06);
+  }
+  50% {
+    transform: translate(-5px, -22px) scale(0.94);
+  }
+  75% {
+    transform: translate(-10px, -8px) scale(1.04);
+  }
+}
+
+@keyframes liquidGlow {
+  0% {
+    text-shadow:
+      0 0 40px rgba(180, 77, 255, 0.45),
+      0 0 80px rgba(139, 92, 246, 0.25),
+      0 0 4px rgba(200, 160, 255, 0.5);
+  }
+  100% {
+    text-shadow:
+      0 0 55px rgba(180, 77, 255, 0.6),
+      0 0 95px rgba(139, 92, 246, 0.35),
+      0 0 6px rgba(200, 160, 255, 0.65),
+      0 0 18px rgba(59, 130, 246, 0.35);
+  }
+}
+
+@keyframes emergencyPulse {
+  0%, 100% {
+    box-shadow:
+      0 0 40px rgba(255, 80, 120, 0.08),
+      inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  }
+  50% {
+    box-shadow:
+      0 0 55px rgba(255, 80, 120, 0.16),
+      0 0 3px rgba(255, 80, 120, 0.25),
+      inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  }
+}
+
+@keyframes waveShift {
+  0%, 100% {
+    transform: translateX(0);
+    opacity: 0.35;
+  }
+  50% {
+    transform: translateX(3%);
+    opacity: 0.5;
+  }
+}
+
+/* === 响应式调整 === */
+@media (max-width: 480px) {
+  :root {
+    --font-size-h1: 1.9rem;
+    --font-size-h2: 1.3rem;
+    --font-size-h3: 1rem;
+    --font-size-body: 0.88rem;
+    --font-size-small: 0.73rem;
+    --space-lg: 1.2rem;
+    --space-xl: 1.8rem;
+    --radius-lg: 20px;
+    --radius-md: 12px;
+  }
+
+  .hero {
+    padding: var(--space-lg) var(--space-md);
+  }
+
+  .hero .liquid-bubble:nth-child(1) {
+    width: 60px;
+    height: 60px;
+    top: -15px;
+    right: -10px;
+  }
+
+  .hero .liquid-bubble:nth-child(2) {
+    width: 40px;
+    height: 40px;
+    left: -10px;
+  }
+
+  .hero .liquid-bubble:nth-child(4) {
+    width: 50px;
+    height: 50px;
+    left: 30%;
+  }
+
+  .day-card,
+  .budget-section,
+  .xhs-section,
+  .tips-section,
+  .emergency-section,
+  .packing-section {
+    padding: var(--space-md);
+  }
+
+  .budget-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-xs);
+  }
+}
+</style>
+{% endblock %}
+
+{% block header_decor %}
+<div class="liquid-bubbles" aria-hidden="true">
+  <div class="liquid-bubble"></div>
+  <div class="liquid-bubble"></div>
+  <div class="liquid-bubble"></div>
+  <div class="liquid-bubble"></div>
+  <div class="liquid-bubble"></div>
+</div>
+{% endblock %}
+
+{% block footer_decor %}
+<div class="liquid-wave-footer" aria-hidden="true"></div>
+{% endblock %}

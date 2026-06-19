@@ -1,0 +1,831 @@
+{% extends "base.html" %}
+
+{% block style_vars %}
+<style>
+  :root {
+    /* === 包豪斯色彩体系 === */
+    --color-bg: #F3F0E8;
+    --color-surface: #FAFAF5;
+    --color-primary: #D42D2D;
+    --color-secondary: #1D5CA6;
+    --color-accent: #E8B800;
+    --color-text: #1A1A1A;
+    --color-text-secondary: #5C5C5C;
+    --color-text-heading: #0D0D0D;
+    --color-border: #1A1A1A;
+    --color-shadow: rgba(26, 26, 26, 0.18);
+
+    /* === 包豪斯字体体系 === */
+    --font-heading: 'Noto Sans SC', 'Helvetica Neue', 'Futura', 'Arial', sans-serif;
+    --font-body: 'Noto Sans SC', 'Helvetica Neue', 'Arial', sans-serif;
+    --font-mono: 'SF Mono', 'JetBrains Mono', 'Courier New', monospace;
+
+    /* === 排版层级 === */
+    --font-size-h1: 2.6rem;
+    --font-size-h2: 1.4rem;
+    --font-size-h3: 1.05rem;
+    --font-size-body: 0.9rem;
+    --font-size-small: 0.78rem;
+    --line-height: 1.55;
+
+    /* === 网格间距（8px基准） === */
+    --space-xs: 4px;
+    --space-sm: 8px;
+    --space-md: 16px;
+    --space-lg: 28px;
+    --space-xl: 40px;
+    --space-xxl: 56px;
+
+    /* === 几何纯粹——包豪斯不用圆角 === */
+    --radius-sm: 0px;
+    --radius-md: 0px;
+    --radius-lg: 0px;
+
+    /* === 干脆利落的过渡 === */
+    --transition-fast: 0.12s ease;
+    --transition-normal: 0.22s ease;
+  }
+</style>
+{% endblock %}
+
+{% block style_css %}
+<style>
+  /* === 容器宽度约束 === */
+  main,
+  .container,
+  .max-w-2xl {
+    max-width: 720px;
+    margin: 0 auto;
+  }
+
+  /* === 页面基底：微网格纹理 + 暖白纸张 === */
+  body {
+    background-color: #F3F0E8;
+    background-image:
+      repeating-linear-gradient(0deg, transparent, transparent 22px, rgba(26, 26, 26, 0.028) 22px, rgba(26, 26, 26, 0.028) 23px),
+      repeating-linear-gradient(90deg, transparent, transparent 22px, rgba(26, 26, 26, 0.028) 22px, rgba(26, 26, 26, 0.028) 23px);
+    background-attachment: fixed;
+    color: var(--color-text);
+    font-family: var(--font-body);
+    font-size: var(--font-size-body);
+    line-height: var(--line-height);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* === Hero 封面区 === */
+  .hero {
+    position: relative;
+    background: var(--color-surface);
+    border: 3px solid var(--color-border);
+    padding: var(--space-xl) var(--space-lg);
+    margin-bottom: var(--space-lg);
+    overflow: hidden;
+    min-height: 320px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .hero h1 {
+    font-family: var(--font-heading);
+    font-size: var(--font-size-h1);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--color-text-heading);
+    line-height: 1.1;
+    margin: 0 0 var(--space-sm) 0;
+    position: relative;
+    z-index: 2;
+    word-break: break-word;
+  }
+
+  .hero h1::before {
+    content: '■ ';
+    color: var(--color-primary);
+    font-size: 1.6rem;
+    vertical-align: middle;
+    letter-spacing: 0;
+  }
+
+  .hero .subtitle {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-small);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--color-text-secondary);
+    position: relative;
+    z-index: 2;
+    margin-bottom: var(--space-md);
+    padding-bottom: var(--space-sm);
+    border-bottom: 2px solid var(--color-border);
+    display: inline-block;
+  }
+
+  .hero .weather-overview,
+  .hero .budget-overview {
+    position: relative;
+    z-index: 2;
+    font-family: var(--font-heading);
+    font-size: var(--font-size-small);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--color-text);
+    margin-top: var(--space-xs);
+    display: inline-block;
+    padding: var(--space-xs) var(--space-sm);
+    border: 2px solid var(--color-border);
+    background: var(--color-bg);
+  }
+
+  .hero .budget-overview {
+    margin-left: var(--space-sm);
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+  }
+
+  /* === Day-Card 每日行程 === */
+  .day-card {
+    position: relative;
+    background: var(--color-surface);
+    border: 2px solid var(--color-border);
+    padding: var(--space-lg) var(--space-md) var(--space-md) var(--space-md);
+    margin-bottom: var(--space-lg);
+  }
+
+  .day-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 5px;
+    background: var(--color-primary);
+  }
+
+  .day-card:nth-child(even)::before {
+    background: var(--color-secondary);
+  }
+
+  .day-card h2 {
+    font-family: var(--font-heading);
+    font-size: var(--font-size-h2);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-text-heading);
+    margin: 0 0 var(--space-xs) 0;
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+  }
+
+  .day-card h2::after {
+    content: '';
+    flex: 1;
+    height: 2px;
+    background: var(--color-border);
+    margin-left: var(--space-sm);
+  }
+
+  .day-card .day-theme {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-small);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--color-text-secondary);
+    margin-bottom: var(--space-md);
+    padding-left: var(--space-sm);
+    border-left: 3px solid var(--color-accent);
+  }
+
+  .day-card .weather-badge {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: var(--font-size-small);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: var(--space-xs) var(--space-sm);
+    border: 2px solid var(--color-border);
+    background: var(--color-bg);
+    margin-bottom: var(--space-md);
+  }
+
+  /* === 活动条目 === */
+  .activity-item {
+    position: relative;
+    padding: var(--space-md) 0;
+    border-bottom: 1px solid rgba(26, 26, 26, 0.15);
+    padding-left: var(--space-lg);
+  }
+
+  .activity-item:last-of-type {
+    border-bottom: none;
+  }
+
+  .activity-item::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: var(--space-md);
+    width: 10px;
+    height: 10px;
+    background: var(--color-primary);
+  }
+
+  .activity-item:nth-child(even)::before {
+    background: var(--color-secondary);
+    border-radius: 50%;
+    width: 10px;
+    height: 10px;
+  }
+
+  .activity-item h3 {
+    font-family: var(--font-heading);
+    font-size: var(--font-size-h3);
+    font-weight: 700;
+    color: var(--color-text-heading);
+    margin: 0 0 var(--space-xs) 0;
+    letter-spacing: 0.02em;
+  }
+
+  .activity-item .activity-order {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-small);
+    color: var(--color-text-secondary);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .activity-item .activity-time {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-small);
+    font-weight: 700;
+    color: var(--color-text-heading);
+    display: inline-block;
+    padding: 2px var(--space-xs);
+    border: 1px solid var(--color-border);
+    margin-right: var(--space-sm);
+  }
+
+  .activity-item .activity-desc {
+    color: var(--color-text);
+    margin: var(--space-xs) 0;
+    line-height: var(--line-height);
+  }
+
+  .activity-item .activity-location {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-small);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    display: inline-block;
+    margin-top: var(--space-xs);
+  }
+
+  .activity-item .activity-location a {
+    color: var(--color-secondary);
+    text-decoration: none;
+    border-bottom: 1px solid var(--color-secondary);
+    padding-bottom: 1px;
+    transition: var(--transition-fast);
+  }
+
+  .activity-item .activity-location a:hover {
+    color: var(--color-primary);
+    border-bottom-color: var(--color-primary);
+  }
+
+  .activity-item .transport-info,
+  .activity-item .meal-info {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: var(--font-size-small);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    padding: 2px var(--space-sm);
+    margin-top: var(--space-xs);
+    margin-right: var(--space-sm);
+    border: 2px solid var(--color-border);
+    background: var(--color-bg);
+    color: var(--color-text-secondary);
+  }
+
+  .activity-item .meal-info {
+    border-color: var(--color-accent);
+    color: #8A6D00;
+  }
+
+  /* === 日间地图 === */
+  .day-map {
+    width: 100%;
+    height: 200px;
+    border: 2px solid var(--color-border);
+    margin-top: var(--space-md);
+    background: var(--color-bg);
+    /* 不使用 filter/opacity/mix-blend-mode/backdrop-filter */
+  }
+
+  /* === 酒店信息 === */
+  .hotel-info {
+    margin-top: var(--space-md);
+    padding: var(--space-md);
+    border: 2px dashed var(--color-border);
+    background: var(--color-bg);
+    font-family: var(--font-mono);
+    font-size: var(--font-size-small);
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+  }
+
+  .hotel-info::before {
+    content: '◆ ';
+    color: var(--color-primary);
+  }
+
+  /* === 预算区块 === */
+  .budget-section {
+    background: var(--color-surface);
+    border: 2px solid var(--color-border);
+    padding: var(--space-lg) var(--space-md);
+    margin-bottom: var(--space-lg);
+    position: relative;
+  }
+
+  .budget-section::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    height: 6px;
+    background: var(--color-primary);
+  }
+
+  .budget-section h2,
+  .budget-section > .section-title {
+    font-family: var(--font-heading);
+    font-size: var(--font-size-h2);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-text-heading);
+    margin: 0 0 var(--space-md) 0;
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+  }
+
+  .budget-section h2::before,
+  .budget-section > .section-title::before {
+    content: '▲';
+    color: var(--color-accent);
+    font-size: 1rem;
+  }
+
+  .budget-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    background: var(--color-border);
+    border: 2px solid var(--color-border);
+  }
+
+  .budget-item {
+    background: var(--color-surface);
+    padding: var(--space-sm) var(--space-md);
+    font-family: var(--font-mono);
+    font-size: var(--font-size-small);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: var(--space-xs);
+  }
+
+  .budget-item i {
+    color: var(--color-text-secondary);
+  }
+
+  .budget-item .budget-amount {
+    font-weight: 700;
+    color: var(--color-text-heading);
+    margin-left: auto;
+  }
+
+  .budget-total {
+    grid-column: 1 / -1;
+    background: var(--color-text-heading);
+    color: #FAFAF5;
+    padding: var(--space-sm) var(--space-md);
+    font-family: var(--font-heading);
+    font-size: var(--font-size-h3);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 3px solid var(--color-primary);
+  }
+
+  .budget-total::before {
+    content: '● ';
+    color: var(--color-accent);
+  }
+
+  /* === 小红书攻略区块 === */
+  .xhs-section {
+    background: var(--color-surface);
+    border: 2px solid var(--color-border);
+    padding: var(--space-lg) var(--space-md);
+    margin-bottom: var(--space-lg);
+    position: relative;
+  }
+
+  .xhs-section::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: -2px;
+    right: -2px;
+    height: 6px;
+    background: var(--color-secondary);
+  }
+
+  .xhs-section h2,
+  .xhs-section > .section-title {
+    font-family: var(--font-heading);
+    font-size: var(--font-size-h2);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-text-heading);
+    margin: 0 0 var(--space-md) 0;
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+  }
+
+  .xhs-section h2::before,
+  .xhs-section > .section-title::before {
+    content: '●';
+    color: var(--color-primary);
+  }
+
+  .xhs-note {
+    border: 2px solid var(--color-border);
+    padding: var(--space-md);
+    margin-bottom: var(--space-md);
+    background: var(--color-bg);
+    position: relative;
+    padding-left: calc(var(--space-md) + 24px);
+  }
+
+  .xhs-note::before {
+    content: '◆';
+    position: absolute;
+    left: var(--space-sm);
+    top: var(--space-md);
+    font-size: 1rem;
+    color: var(--color-primary);
+  }
+
+  .xhs-note:last-child {
+    margin-bottom: 0;
+  }
+
+  .xhs-note h3 {
+    font-family: var(--font-heading);
+    font-size: var(--font-size-h3);
+    font-weight: 700;
+    color: var(--color-text-heading);
+    margin: 0 0 var(--space-xs) 0;
+  }
+
+  .xhs-note p {
+    color: var(--color-text);
+    margin: 0;
+    line-height: var(--line-height);
+  }
+
+  /* === 旅行贴士区块 === */
+  .tips-section {
+    background: var(--color-surface);
+    border: 2px solid var(--color-border);
+    padding: var(--space-lg) var(--space-md);
+    margin-bottom: var(--space-lg);
+    position: relative;
+  }
+
+  .tips-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 28px;
+    height: 28px;
+    background: var(--color-accent);
+    clip-path: polygon(0 0, 100% 0, 0 100%);
+  }
+
+  .tips-section h2,
+  .tips-section > .section-title {
+    font-family: var(--font-heading);
+    font-size: var(--font-size-h2);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-text-heading);
+    margin: 0 0 var(--space-md) 0;
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding-left: var(--space-lg);
+  }
+
+  .tips-section h2::before,
+  .tips-section > .section-title::before {
+    content: '■';
+    color: var(--color-primary);
+  }
+
+  .tips-section ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .tips-section li {
+    position: relative;
+    padding: var(--space-sm) 0 var(--space-sm) var(--space-lg);
+    border-bottom: 1px solid rgba(26, 26, 26, 0.1);
+    font-family: var(--font-body);
+    color: var(--color-text);
+    line-height: var(--line-height);
+  }
+
+  .tips-section li::before {
+    content: '—';
+    position: absolute;
+    left: var(--space-sm);
+    color: var(--color-secondary);
+    font-weight: 700;
+  }
+
+  .tips-section li:last-child {
+    border-bottom: none;
+  }
+
+  /* === 紧急信息区块 === */
+  .emergency-section {
+    background: var(--color-surface);
+    border: 3px solid var(--color-primary);
+    padding: var(--space-lg) var(--space-md);
+    margin-bottom: var(--space-lg);
+    position: relative;
+  }
+
+  .emergency-section::before {
+    content: '!';
+    position: absolute;
+    top: -16px;
+    left: var(--space-md);
+    width: 32px;
+    height: 32px;
+    background: var(--color-primary);
+    color: #FAFAF5;
+    font-family: var(--font-heading);
+    font-size: 1.2rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+  }
+
+  .emergency-section h2,
+  .emergency-section > .section-title {
+    font-family: var(--font-heading);
+    font-size: var(--font-size-h2);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-primary);
+    margin: 0 0 var(--space-md) 0;
+  }
+
+  .emergency-section ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .emergency-section li {
+    padding: var(--space-xs) 0;
+    font-family: var(--font-mono);
+    font-size: var(--font-size-small);
+    letter-spacing: 0.03em;
+    color: var(--color-text);
+    border-left: 3px solid var(--color-primary);
+    padding-left: var(--space-sm);
+    margin-bottom: var(--space-xs);
+  }
+
+  /* === 行李清单区块 === */
+  .packing-section {
+    background: var(--color-surface);
+    border: 2px solid var(--color-border);
+    padding: var(--space-lg) var(--space-md);
+    margin-bottom: var(--space-lg);
+    position: relative;
+  }
+
+  .packing-section::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 32px;
+    height: 32px;
+    background: var(--color-accent);
+    clip-path: polygon(100% 0, 0 100%, 100% 100%);
+  }
+
+  .packing-section h2,
+  .packing-section > .section-title {
+    font-family: var(--font-heading);
+    font-size: var(--font-size-h2);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-text-heading);
+    margin: 0 0 var(--space-md) 0;
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+  }
+
+  .packing-section h2::before,
+  .packing-section > .section-title::before {
+    content: '□';
+    color: var(--color-secondary);
+    font-size: 1.1rem;
+  }
+
+  .packing-section ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-sm);
+  }
+
+  .packing-section li {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-small);
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: var(--color-text);
+    padding: var(--space-xs) var(--space-sm);
+    border: 1px solid var(--color-border);
+    position: relative;
+    padding-left: calc(var(--space-sm) + 16px);
+  }
+
+  .packing-section li::before {
+    content: '□';
+    position: absolute;
+    left: var(--space-xs);
+    color: var(--color-text-secondary);
+    font-size: 0.7rem;
+  }
+
+  /* === 页脚 === */
+  footer {
+    background: var(--color-text-heading);
+    color: #C8C8C0;
+    padding: var(--space-lg) var(--space-md);
+    text-align: center;
+    font-family: var(--font-mono);
+    font-size: var(--font-size-small);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    border-top: 4px solid var(--color-primary);
+    position: relative;
+  }
+
+  footer a {
+    color: var(--color-accent);
+    text-decoration: none;
+    border-bottom: 1px solid var(--color-accent);
+  }
+
+  /* === 数据可信度徽章 === */
+  .verification-badge.community-match,
+  .verification-badge.community-only {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: var(--font-size-small);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: var(--space-xs) var(--space-sm);
+    border: 2px solid var(--color-border);
+    background: var(--color-bg);
+    color: var(--color-text-secondary);
+    margin: var(--space-sm) 0;
+  }
+
+  .verification-badge.community-match {
+    border-color: var(--color-secondary);
+    color: var(--color-secondary);
+  }
+
+  .verification-badge.community-match::before {
+    content: '● ';
+    color: var(--color-secondary);
+  }
+
+  .verification-badge.community-only::before {
+    content: '○ ';
+    color: var(--color-text-secondary);
+  }
+
+  /* === 通用装饰性水平分隔线 === */
+  .section-divider {
+    width: 100%;
+    height: 3px;
+    background: var(--color-border);
+    margin: var(--space-lg) 0;
+    position: relative;
+  }
+
+  .section-divider::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: -3px;
+    width: 16px;
+    height: 9px;
+    background: var(--color-primary);
+  }
+
+  /* === 响应式微调 === */
+  @media (max-width: 480px) {
+    .hero {
+      padding: var(--space-lg) var(--space-md);
+      min-height: 240px;
+    }
+
+    .hero h1 {
+      font-size: 1.8rem;
+    }
+
+    .hero h1::before {
+      font-size: 1.2rem;
+    }
+
+    .budget-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .packing-section ul {
+      grid-template-columns: 1fr;
+    }
+
+    .day-card {
+      padding: var(--space-md) var(--space-sm) var(--space-sm) var(--space-sm);
+    }
+
+    .activity-item {
+      padding-left: calc(var(--space-md) + 4px);
+    }
+
+    .tips-section li {
+      padding-left: var(--space-md);
+    }
+  }
+</style>
+{% endblock %}
+
+{% block header_decor %}
+<!-- 包豪斯几何装饰：红圆 · 黄三角 · 蓝矩形线条 -->
+<div style="position:absolute;top:-18px;right:-18px;width:86px;height:86px;border-radius:50%;background:var(--color-primary);opacity:0.25;z-index:0;" aria-hidden="true"></div>
+<div style="position:absolute;bottom:-14px;left:8%;width:0;height:0;border-left:32px solid transparent;border-right:32px solid transparent;border-bottom:56px solid var(--color-accent);opacity:0.45;z-index:0;" aria-hidden="true"></div>
+<div style="position:absolute;top:12%;right:10%;width:48px;height:4px;background:var(--color-secondary);opacity:0.55;z-index:0;transform:rotate(-15deg);" aria-hidden="true"></div>
+<div style="position:absolute;bottom:20%;left:5%;width:28px;height:28px;border:3px solid var(--color-secondary);opacity:0.4;z-index:0;" aria-hidden="true"></div>
+<div style="position:absolute;top:40%;right:4%;width:14px;height:14px;background:var(--color-accent);opacity:0.55;z-index:0;" aria-hidden="true"></div>
+{% endblock %}
+
+{% block footer_decor %}
+<!-- 包豪斯几何装饰：底部的克制几何点缀 -->
+<div style="display:flex;justify-content:center;align-items:center;gap:10px;margin-top:14px;opacity:0.45;" aria-hidden="true">
+  <div style="width:10px;height:10px;background:var(--color-primary);"></div>
+  <div style="width:10px;height:10px;border-radius:50%;background:var(--color-accent);"></div>
+  <div style="width:0;height:0;border-left:7px solid transparent;border-right:7px solid transparent;border-bottom:12px solid var(--color-secondary);"></div>
+  <div style="width:22px;height:3px;background:#C8C8C0;"></div>
+  <div style="width:10px;height:10px;background:var(--color-primary);"></div>
+</div>
+{% endblock %}

@@ -1,0 +1,607 @@
+{#
+plugins/travel/templates/base.html —— 旅行攻略基础模板骨架。
+
+此模板定义了所有风格共用的 HTML 结构和内容区块。
+29 个风格模板通过 Jinja2 继承（{% extends "base.html" %}）此模板，
+并覆盖以下 block:
+  - {% block style_vars %}    → CSS 自定义属性（颜色、字体、间距等）
+  - {% block style_css %}     → 风格特有的 CSS 规则
+  - {% block header_decor %}  → Header 区域的装饰元素
+  - {% block footer_decor %}  → Footer 区域的装饰元素
+
+模板变量（由 renderer.py 传入）:
+  - plan: TripPlan Pydantic 对象
+  - trip_json: TripPlan JSON 字符串（用于前端 JS）
+  - amap_js_key: 高德地图 JS API Key
+  - current_year: 当前年份
+
+参考:
+  - prompt.md 中的设计规范（杂志风、响应式、地图等）
+  - 29种风格.md 中的风格说明
+#}
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{ plan.city }}旅行攻略 | {{ plan.start_date }} ~ {{ plan.end_date }}</title>
+
+{# ── CDN 资源 ── #}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.0.0/css/all.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap">
+
+{# ── 风格 CSS 变量（子模板覆盖） ── #}
+{% block style_vars -%}
+<style>
+:root {
+    /* 主色调 */
+    --color-bg: #1a1a2e;
+    --color-surface: #16213e;
+    --color-primary: #D4AF37;
+    --color-secondary: #c9a830;
+    --color-accent: #e8c547;
+    --color-text: #e0d5c1;
+    --color-text-secondary: #b0a590;
+    --color-text-heading: #D4AF37;
+    --color-border: rgba(212,175,55,0.3);
+    --color-shadow: rgba(212,175,55,0.15);
+    /* 排版 */
+    --font-heading: 'Noto Serif SC', serif;
+    --font-body: 'Noto Sans SC', sans-serif;
+    --font-mono: 'Courier New', monospace;
+    --font-size-h1: 2.5rem;
+    --font-size-h2: 1.8rem;
+    --font-size-h3: 1.3rem;
+    --font-size-body: 1rem;
+    --font-size-small: 0.85rem;
+    --line-height: 1.7;
+    /* 间距 */
+    --space-xs: 0.25rem;
+    --space-sm: 0.5rem;
+    --space-md: 1rem;
+    --space-lg: 1.5rem;
+    --space-xl: 2rem;
+    --space-xxl: 3rem;
+    /* 圆角 */
+    --radius-sm: 4px;
+    --radius-md: 8px;
+    --radius-lg: 16px;
+    /* 过渡 */
+    --transition-fast: 0.15s ease;
+    --transition-normal: 0.3s ease;
+}
+</style>
+{%- endblock %}
+
+{# ── 风格特有 CSS（子模板覆盖） ── #}
+{% block style_css -%}
+<style>
+/* Art Deco 风格默认 CSS */
+body {
+    background: linear-gradient(135deg, var(--color-bg) 0%, #0f0f23 100%);
+    color: var(--color-text);
+    font-family: var(--font-body);
+    line-height: var(--line-height);
+}
+.hero {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 40%, #0f3460 100%);
+    border-bottom: 3px solid var(--color-primary);
+    padding: var(--space-xxl) var(--space-lg);
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+.hero::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background:
+        radial-gradient(circle at 20% 50%, rgba(212,175,55,0.1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 50%, rgba(212,175,55,0.08) 0%, transparent 50%);
+}
+.hero h1 { font-family: var(--font-heading); font-size: var(--font-size-h1); color: var(--color-primary); }
+.hero .subtitle { color: var(--color-text-secondary); font-size: var(--font-size-h3); }
+.day-card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-lg);
+    margin-bottom: var(--space-lg);
+    box-shadow: 0 4px 20px var(--color-shadow);
+}
+.day-card h2 { font-family: var(--font-heading); color: var(--color-primary); }
+.activity-item { padding: var(--space-md) 0; border-bottom: 1px solid var(--color-border); }
+.activity-item:last-child { border-bottom: none; }
+
+/* 通用组件 */
+.weather-badge {
+    display: inline-block;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: var(--space-xs) var(--space-sm);
+    font-size: var(--font-size-small);
+    margin: var(--space-sm) 0;
+}
+.weather-tips { color: var(--color-accent); }
+.activity-time {
+    font-size: var(--font-size-small);
+    color: var(--color-text-secondary);
+    white-space: nowrap;
+}
+.activity-desc {
+    font-size: var(--font-size-small);
+    color: var(--color-text-secondary);
+    margin-top: var(--space-xs);
+}
+.activity-location {
+    font-size: var(--font-size-small);
+    margin-top: var(--space-xs);
+}
+.activity-location a { color: var(--color-accent); text-decoration: underline; }
+.transport-info {
+    font-size: var(--font-size-small);
+    color: var(--color-text-secondary);
+    margin-top: var(--space-xs);
+    padding-left: var(--space-md);
+    border-left: 2px solid var(--color-border);
+}
+.meal-info {
+    font-size: var(--font-size-small);
+    margin-top: var(--space-xs);
+    color: var(--color-accent);
+}
+.hotel-info {
+    font-size: var(--font-size-small);
+    margin-top: var(--space-sm);
+    padding: var(--space-sm);
+    background: rgba(212,175,55,0.05);
+    border-radius: var(--radius-sm);
+}
+.day-theme {
+    font-size: var(--font-size-small);
+    color: var(--color-text-secondary);
+    margin-bottom: var(--space-sm);
+}
+.day-map {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+}
+
+/* 预算 */
+.budget-grid { display: flex; flex-wrap: wrap; gap: var(--space-sm); }
+.budget-item {
+    flex: 1 1 45%;
+    font-size: var(--font-size-small);
+    padding: var(--space-xs) 0;
+}
+.budget-amount { float: right; color: var(--color-primary); }
+.budget-total {
+    flex: 1 1 100%;
+    font-size: var(--font-size-h3);
+    text-align: center;
+    padding: var(--space-sm) 0;
+    border-top: 2px solid var(--color-primary);
+}
+
+/* 小红书笔记 */
+.xhs-note {
+    padding: var(--space-sm) 0;
+    border-bottom: 1px solid var(--color-border);
+}
+.xhs-note:last-child { border-bottom: none; }
+.xhs-note a { color: var(--color-accent); font-weight: 500; }
+.xhs-author { color: var(--color-text-secondary); font-size: var(--font-size-small); margin-left: var(--space-sm); }
+.xhs-likes { color: #ff6b6b; font-size: var(--font-size-small); margin-left: var(--space-sm); }
+.xhs-note p { font-size: var(--font-size-small); color: var(--color-text-secondary); margin-top: var(--space-xs); }
+
+/* 可信度标记 */
+.verification-badge {
+    display: inline-block;
+    font-size: 0.75rem;
+    padding: 1px 6px;
+    border-radius: 10px;
+    margin-left: var(--space-sm);
+}
+.verification-badge.community-match {
+    background: rgba(245,166,35,0.15);
+    color: #f5a623;
+    border: 1px solid rgba(245,166,35,0.3);
+}
+.verification-badge.community-only {
+    background: rgba(153,153,153,0.15);
+    color: #999;
+    border: 1px solid rgba(153,153,153,0.3);
+}
+.verification-note {
+    font-size: 0.75rem;
+    color: var(--color-text-secondary);
+    font-style: italic;
+    margin-top: 2px;
+}
+
+/* 紧急信息 */
+.emergency-section p { font-size: var(--font-size-small); margin: var(--space-xs) 0; }
+
+/* Tips */
+.tips-section ul { list-style: none; padding: 0; }
+.tips-section li {
+    font-size: var(--font-size-small);
+    padding: var(--space-xs) 0;
+    padding-left: var(--space-lg);
+    position: relative;
+}
+.tips-section li::before { content: '💡'; position: absolute; left: 0; }
+
+footer { font-size: var(--font-size-small); color: var(--color-text-secondary); }
+</style>
+{%- endblock %}
+</head>
+
+<body>
+<div class="container mx-auto px-4 max-w-2xl">
+
+    {# ── Header / Hero ── #}
+    <header class="hero rounded-lg mt-4">
+        {% block header_decor %}{% endblock %}
+        <h1>{{ plan.city }}</h1>
+        <p class="subtitle mt-2">
+            {{ plan.total_days }} 日{{ plan.travel_style }}
+            &nbsp;·&nbsp; {{ plan.start_date }} ~ {{ plan.end_date }}
+        </p>
+        {% if plan.weather_overview %}
+        <p class="weather-overview mt-2" style="font-size: var(--font-size-small); color: var(--color-text-secondary);">
+            {{ plan.weather_overview }}
+        </p>
+        {% endif %}
+        <p class="budget-overview mt-2" style="font-size: var(--font-size-h3); color: var(--color-primary);">
+            预算: {{ plan.budget.currency }}{{ "%.0f"|format(plan.budget.total) }}
+        </p>
+    </header>
+
+    {# ── 每日行程 ── #}
+    {% for day in plan.days %}
+    <section class="day-card">
+        <h2>
+            <i class="fas fa-calendar-day"></i>
+            Day {{ day.day }} &nbsp;
+            <span style="font-size: var(--font-size-small); opacity: 0.75;">{{ day.date }}</span>
+        </h2>
+        <p class="day-theme">
+            <i class="fas fa-theater-masks"></i> {{ day.theme }}
+        </p>
+
+        {# 天气 #}
+        <div class="weather-badge">
+            <i class="fas fa-cloud-sun"></i>
+            {{ day.weather.weather }}
+            {{ day.weather.temp_low }}°C ~ {{ day.weather.temp_high }}°C
+            {% if day.weather.tips %}
+            <span class="weather-tips">· {{ day.weather.tips }}</span>
+            {% endif %}
+        </div>
+
+        {# 活动列表 #}
+        <div class="activities mt-3">
+            {% for act in day.activities %}
+            <div class="activity-item">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                    <h3 style="font-size: var(--font-size-h3);">
+                        <span class="activity-order" style="color: var(--color-primary);">{{ act.order }}.</span>
+                        {{ act.title }}
+                    </h3>
+                    <span class="activity-time">{{ act.start_time }} - {{ act.end_time }}</span>
+                </div>
+
+                <p class="activity-desc">{{ act.description }}</p>
+
+                {% if act.location and act.location.name %}
+                <div class="activity-location">
+                    <i class="fas fa-map-marker-alt"></i>
+                    {% if act.location.amap_url %}
+                    <a href="{{ act.location.amap_url }}" target="_blank" rel="noopener">
+                        {{ act.location.name }}
+                    </a>
+                    {% else %}
+                    {{ act.location.name }}
+                    {% endif %}
+                    {% if act.location.price_info %}
+                    · {{ act.location.price_info }}
+                    {% endif %}
+                    {% if act.location.rating > 0 %}
+                    · ⭐ {{ "%.1f"|format(act.location.rating) }}
+                    {% endif %}
+                    {# ★ 数据可信度标记 #}
+                    {% set v = act.location.verification or "amap_verified" %}
+                    {% if v == "community_match" %}
+                    <span class="verification-badge community-match">💬 社区推荐 · 已核验</span>
+                    {% elif v == "community_only" %}
+                    <span class="verification-badge community-only">💬 社区推荐 · 坐标近似</span>
+                    {% endif %}
+                </div>
+                {# community_only 的额外提示 #}
+                {% if (act.location.verification or "amap_verified") == "community_only" and act.location.notes %}
+                <div class="verification-note">{{ act.location.notes }}</div>
+                {% endif %}
+                {% endif %}
+
+                {% if act.transport_to_next %}
+                <div class="transport-info">
+                    <i class="fas fa-arrow-right"></i>
+                    前往 {{ act.transport_to_next.to_place }}:
+                    {{ act.transport_to_next.description }}
+                    (约 {{ act.transport_to_next.duration_minutes }} 分钟)
+                    {% if act.transport_to_next.cost > 0 %}
+                    · {{ plan.budget.currency }}{{ "%.0f"|format(act.transport_to_next.cost) }}
+                    {% endif %}
+                </div>
+                {% endif %}
+
+                {% if act.meal_detail and act.meal_detail.restaurant.name %}
+                <div class="meal-info">
+                    <i class="fas fa-utensils"></i>
+                    {{ act.meal_detail.restaurant.name }}
+                    {% if act.meal_detail.must_try %}
+                    · 推荐: {{ act.meal_detail.must_try|join('、') }}
+                    {% endif %}
+                    {% if act.meal_detail.estimated_cost > 0 %}
+                    · 人均{{ plan.budget.currency }}{{ "%.0f"|format(act.meal_detail.estimated_cost) }}
+                    {% endif %}
+                </div>
+                {% endif %}
+
+                {% if act.notes %}
+                <div style="font-size: var(--font-size-small); color: var(--color-text-secondary); margin-top: 2px;">
+                    📝 {{ act.notes }}
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+
+        {# ★ 地图预览（static 模式：预取的 base64 内嵌图片；dynamic 模式：交互地图容器） #}
+        {% if use_static_map and day_map_uris.get(day.day) %}
+        <img style="display:block; width:100%; height:auto; border:1px solid var(--color-border); border-radius:8px; margin-top:1rem;"
+             src="{{ day_map_uris[day.day] }}"
+             alt="Day {{ day.day }} 路线图">
+        {% elif not use_static_map and amap_js_key %}
+        <div id="map-day-{{ day.day }}" class="day-map" style="height:300px; margin-top:1rem;"></div>
+        {% endif %}
+
+        {# 住宿 #}
+        {% if day.hotel and day.hotel.name %}
+        <div class="hotel-info mt-3">
+            <i class="fas fa-hotel"></i>
+            住宿: {{ day.hotel.name }}
+            {% if day.hotel.price_info %}
+            · {{ day.hotel.price_info }}
+            {% endif %}
+            {% if day.hotel.rating > 0 %}
+            · ⭐ {{ "%.1f"|format(day.hotel.rating) }}
+            {% endif %}
+        </div>
+        {% endif %}
+
+        {% if day.day_notes %}
+        <div style="font-size: var(--font-size-small); color: var(--color-text-secondary); margin-top: var(--space-sm);">
+            📝 {{ day.day_notes }}
+        </div>
+        {% endif %}
+    </section>
+    {% endfor %}
+
+    {# ── 预算明细 ── #}
+    <section class="budget-section day-card">
+        <h2><i class="fas fa-coins"></i> 预算明细</h2>
+        <div class="budget-grid mt-3">
+            {% set items = [
+                ("住宿", plan.budget.accommodation, "hotel"),
+                ("交通", plan.budget.transport, "bus"),
+                ("餐饮", plan.budget.food, "utensils"),
+                ("门票", plan.budget.tickets, "ticket-alt"),
+                ("购物", plan.budget.shopping, "shopping-bag"),
+                ("其他", plan.budget.other, "ellipsis-h")
+            ] %}
+            {% for label, amount, icon in items %}
+            {% if amount > 0 %}
+            <div class="budget-item">
+                <i class="fas fa-{{ icon }}"></i> {{ label }}
+                <span class="budget-amount">{{ plan.budget.currency }}{{ "%.0f"|format(amount) }}</span>
+            </div>
+            {% endif %}
+            {% endfor %}
+            <div class="budget-total">
+                <strong>总计: {{ plan.budget.currency }}{{ "%.0f"|format(plan.budget.total) }}</strong>
+            </div>
+        </div>
+    </section>
+
+    {# ── 行李清单 ── #}
+    {% if plan.packing_list %}
+    <section class="packing-section day-card">
+        <h2><i class="fas fa-suitcase"></i> 行李清单</h2>
+        <div style="display: flex; flex-wrap: wrap; gap: var(--space-sm); margin-top: var(--space-sm);">
+            {% for item in plan.packing_list %}
+            <div style="font-size: var(--font-size-small); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-sm); padding: var(--space-xs) var(--space-sm);">
+                {% if item.essential %}⭐{% endif %}
+                {{ item.name }}
+                {% if item.note %}<span style="color: var(--color-text-secondary);">({{ item.note }})</span>{% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    {# ── 小红书笔记 ── #}
+    {% if plan.xhs_notes %}
+    <section class="xhs-section day-card">
+        <h2><i class="fas fa-book-open"></i> 小红书攻略参考</h2>
+        {% for note in plan.xhs_notes %}
+        <div class="xhs-note">
+            <a href="{{ note.url }}" target="_blank" rel="noopener">{{ note.title }}</a>
+            <span class="xhs-author">@{{ note.author }}</span>
+            {% if note.likes %}<span class="xhs-likes">❤️ {{ note.likes }}</span>{% endif %}
+            {% if note.snippet %}<p>{{ note.snippet }}</p>{% endif %}
+            {% if note.relevance %}<p style="font-size: var(--font-size-small); color: var(--color-accent);">📌 {{ note.relevance }}</p>{% endif %}
+        </div>
+        {% endfor %}
+    </section>
+    {% endif %}
+
+    {# ── 旅行贴士 ── #}
+    {% if plan.suggestions %}
+    <section class="tips-section day-card">
+        <h2><i class="fas fa-lightbulb"></i> 旅行贴士</h2>
+        <ul class="mt-2">
+            {% for tip in plan.suggestions %}
+            <li>{{ tip }}</li>
+            {% endfor %}
+        </ul>
+    </section>
+    {% endif %}
+
+    {# ── 紧急信息 ── #}
+    <section class="emergency-section day-card">
+        <h2><i class="fas fa-phone-alt"></i> 紧急信息</h2>
+        <p>🚔 报警: {{ plan.emergency.police }} | 🚑 急救: {{ plan.emergency.ambulance }} | 🚒 火警: {{ plan.emergency.fire }}</p>
+        {% if plan.emergency.tourism_hotline %}<p>📞 旅游热线: {{ plan.emergency.tourism_hotline }}</p>{% endif %}
+        {% if plan.emergency.hospital %}<p>🏥 附近医院: {{ plan.emergency.hospital }}</p>{% endif %}
+        {% if plan.emergency.embassy %}<p>🏛️ 使领馆: {{ plan.emergency.embassy }}</p>{% endif %}
+        {% for contact in plan.emergency.custom_contacts %}
+        <p>📱 {{ contact }}</p>
+        {% endfor %}
+    </section>
+
+    {# ── Footer ── #}
+    <footer class="text-center py-4" style="opacity: 0.7;">
+        {% block footer_decor %}{% endblock %}
+        <p>
+            🗺️ 数据来源: {{ plan.data_sources|join('、') }}
+            &nbsp;|&nbsp; ⏰ 生成于 {{ plan.generated_at[:19].replace('T', ' ') if plan.generated_at else '' }}
+        </p>
+        <p style="font-size: 0.75rem;">raven-agent · Travel Planner · © {{ current_year }}</p>
+        {% if plan.style %}
+        {% set style_names = {
+            "art_deco": "艺术装饰",
+            "bold_modern": "大胆现代",
+            "elegant_vintage": "优雅复古",
+            "futuristic_tech": "未来科技",
+            "minimalist": "极简主义",
+            "scandinavian": "斯堪的纳维亚",
+            "japanese_minimalism": "日式极简",
+            "postmodern_deconstruct": "后现代解构",
+            "punk": "朋克",
+            "british_rock": "英伦摇滚",
+            "black_metal": "黑金属",
+            "memphis": "孟菲斯",
+            "cyberpunk": "赛博朋克",
+            "pop_art": "波普艺术",
+            "deconstructed_swiss": "瑞士解构",
+            "vaporwave": "蒸汽波",
+            "neo_expressionism": "新表现主义",
+            "extreme_minimalism": "极端极简",
+            "neo_futurism": "新未来主义",
+            "surrealist_collage": "超现实拼贴",
+            "neo_baroque": "新巴洛克",
+            "liquid_digital": "液态数字",
+            "hypersensory_minimalism": "超感官极简",
+            "neo_expressionist_data": "新表现数据",
+            "victorian": "维多利亚",
+            "bauhaus": "包豪斯",
+            "constructivism": "构成主义",
+            "memphis_design": "孟菲斯设计",
+            "german_expressionism": "德国表现主义"
+        } %}
+        <p style="font-size: 0.7rem;">🎨 风格: {{ style_names.get(plan.style, plan.style) }}</p>
+        {% endif %}
+    </footer>
+</div>
+
+{# ── 高德交互地图 JS（仅 dynamic 模式，如有 Key） ── #}
+{% if not use_static_map and amap_js_key %}
+{# ★ _AMapSecurityConfig 必须在地图 JS 加载前设置，否则地图白色/标注异常 #}
+{% if amap_security_code %}
+<script>
+window._AMapSecurityConfig = { securityJsCode: "{{ amap_security_code }}" };
+</script>
+{% endif %}
+<script src="https://webapi.amap.com/maps?v=2.0&key={{ amap_js_key }}"></script>
+{# 用 type="application/json" 存行程数据，避免 JSON 内容中包含引号破坏 JS 解析 #}
+<script id="trip-data-json" type="application/json">{{ trip_json | safe }}</script>
+<script>
+// 行程数据（用于地图初始化）
+var tripData = JSON.parse(document.getElementById('trip-data-json').textContent);
+
+// 为每天初始化地图
+tripData.days.forEach(function(day) {
+    const mapDiv = document.getElementById('map-day-' + day.day);
+    if (!mapDiv) return;
+
+    // JS API 2.0 默认彩色地形图（不传 mapStyle 就是手机 app 的标准底图）
+    const map = new AMap.Map(mapDiv, {
+        zoom: 13,
+        center: [116.3972, 39.9163],
+    });
+
+    // ★ 收集当天有坐标的地点（含可信度标记）
+    const markers = [];
+    day.activities.forEach(function(act) {
+        if (act.location && act.location.coordinates) {
+            const lng = act.location.coordinates.lng;
+            const lat = act.location.coordinates.lat;
+            const v = act.location.verification || "amap_verified";
+            markers.push({
+                position: [lng, lat],
+                title: act.title + (v === "community_only" ? " (坐标近似)" : ""),
+                order: act.order,
+                verification: v,
+            });
+        }
+    });
+
+    // 用 content 渲染彩色圆点 + 序号 label，不依赖远程图片
+    const pinColors = {
+        "amap_verified":   "#1890ff",
+        "community_match": "#f5a623",
+        "community_only":  "#999999",
+    };
+    markers.forEach(function(m) {
+        var color = pinColors[m.verification] || "#1890ff";
+        var marker = new AMap.Marker({
+            position: m.position,
+            title: m.title,
+            content: '<div style="'
+                + 'width:24px;height:24px;border-radius:50%;'
+                + 'background:' + color + ';'
+                + 'border:3px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.3);'
+                + 'color:#fff;font-size:12px;font-weight:bold;line-height:24px;text-align:center;'
+            + '">' + m.order + '</div>',
+            offset: new AMap.Pixel(-12, -12),
+        });
+        map.add(marker);
+    });
+
+    // 画路线（如果有 2+ 个点），使用高德默认蓝色
+    if (markers.length >= 2) {
+        var path = markers.map(function(m) { return m.position; });
+        var polyline = new AMap.Polyline({
+            path: path,
+            strokeColor: '#1890ff',
+            strokeWeight: 4,
+            strokeStyle: 'dashed',
+            showDir: true,
+        });
+        map.add(polyline);
+    }
+
+    // 自适应视野
+    if (markers.length > 0) {
+        map.setFitView(null, false, [100, 100, 100, 100]);
+    }
+});
+</script>
+{% endif %}
+</body>
+</html>

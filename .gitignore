@@ -1,0 +1,16 @@
+config.toml
+.venv/
+__pycache__/
+.pytest_cache/
+.raven/
+.VSCodeCounter/
+.claude/
+node_modules/
+mcp_servers/config.toml
+login_xhs.py
+plugins/travel/_conf_schema.json
+peerAgent/travel-planner/config.toml
+plugins/travel/output
+peerAgent/travel-planner/outputs
+plugins/hello/.kv.json
+plugins/dev_probe/.kv.json
