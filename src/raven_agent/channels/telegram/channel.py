@@ -129,6 +129,10 @@ class TelegramChannel(ChannelAdapter):
         self._known_chat_ids: set[str] = set()
         self._outage_warning_sent: bool = False
         self._RECONNECT_NOTIFY_THRESHOLD = 60.0
+        # 假活检测：running 为 True 但持续 NetworkError
+        self._error_streak_start: float = 0.0
+        self._last_polling_error: float = 0.0
+        self._ERROR_STREAK_STOP_THRESHOLD = 120.0
 
         # ── Live 消息状态 ──
         self._live_edit_queue = TelegramLiveEditQueue(
@@ -881,7 +885,20 @@ class TelegramChannel(ChannelAdapter):
                     self._disable_polling_on_conflict()
                 )
             return
+        now = time.monotonic()
+        if self._error_streak_start == 0.0:
+            self._error_streak_start = now
+        self._last_polling_error = now
         logger.warning("[telegram] polling 异常，框架将自动重试: %s", exc)
+        # 连续报错超过阈值 → 主动 stop，让看门狗接管重启
+        if now - self._error_streak_start > self._ERROR_STREAK_STOP_THRESHOLD:
+            updater = self._app.updater
+            if updater is not None and updater.running:
+                logger.warning(
+                    "[telegram] 连续报错 %.0fs，主动停止 polling 触发看门狗恢复",
+                    now - self._error_streak_start,
+                )
+                asyncio.create_task(self._stop_polling_for_recovery())
 
     async def _disable_polling_on_conflict(self) -> None:
         """Conflict 时关闭 updater 轮询，保留 bot 发送能力。
@@ -903,6 +920,28 @@ class TelegramChannel(ChannelAdapter):
         except Exception as e:
             logger.warning("[telegram] 停止 polling 失败: %s", e)
 
+    async def _stop_polling_for_recovery(self) -> None:
+        """连续报错时主动停止 polling，交由看门狗接管重启。
+
+        与 _disable_polling_on_conflict 不同：
+        - Conflict 是永久退出 polling（另一个实例在跑）
+        - 这里是主动 stop 让看门狗感知 running=False，触发重启
+
+        输入:
+            无。
+
+        输出:
+            None。
+        """
+        updater = self._app.updater
+        if updater is None or not updater.running:
+            return
+        try:
+            await updater.stop()
+            logger.info("[telegram] 已主动停止 polling，等待看门狗接管恢复")
+        except Exception as e:
+            logger.warning("[telegram] 停止 polling 失败: %s", e)
+
 
     # ── 私有方法：polling 存活看门狗 ─────────────────────────
 
@@ -914,6 +953,7 @@ class TelegramChannel(ChannelAdapter):
         - polling 死亡：尝试自动重启
         - 断联超过阈值未恢复：向已知用户发送断联警告
         - 重启成功 + 之前断联过：发送恢复通知
+        - 假活检测：由 _on_polling_error 触发 stop，此处接管恢复
 
         输入:
             无。
@@ -940,6 +980,10 @@ class TelegramChannel(ChannelAdapter):
             if polling_alive:
                 # ── polling 存活 ──
                 self._last_polling_ok = now
+                # 距离上次报错超过阈值 → PTB 自行恢复成功，安全重置
+                if self._error_streak_start > 0 and now - self._last_polling_error > self._ERROR_STREAK_STOP_THRESHOLD:
+                    logger.info("[telegram] 连续报错已自行恢复，重置状态")
+                    self._error_streak_start = 0.0
                 if outage_start is not None:
                     outage_duration = now - outage_start
                     outage_start = None
