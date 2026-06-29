@@ -129,9 +129,11 @@ class TelegramChannel(ChannelAdapter):
         self._known_chat_ids: set[str] = set()
         self._outage_warning_sent: bool = False
         self._RECONNECT_NOTIFY_THRESHOLD = 60.0
-        # 假活检测：running 为 True 但连接池已死
-        self._error_streak_start: float = 0.0
+        # 假活检测：PTB 回调连续报错 > 阈值则触发连接池重建
+        self._polling_error_start: float = 0.0
         self._ERROR_STREAK_STOP_THRESHOLD = 120.0
+        # 连接池重建门闩：防止多个恢复任务并发执行
+        self._recovery_scheduled: bool = False
 
         # ── Live 消息状态 ──
         self._live_edit_queue = TelegramLiveEditQueue(
@@ -884,7 +886,19 @@ class TelegramChannel(ChannelAdapter):
                     self._disable_polling_on_conflict()
                 )
             return
+        now = time.monotonic()
+        if self._polling_error_start == 0.0:
+            self._polling_error_start = now
         logger.warning("[telegram] polling 异常，框架将自动重试: %s", exc)
+        if now - self._polling_error_start > self._ERROR_STREAK_STOP_THRESHOLD:
+            updater = self._app.updater
+            if updater is not None and updater.running and not self._recovery_scheduled:
+                self._recovery_scheduled = True
+                logger.warning(
+                    "[telegram] PTB 连续报错 %.0fs，触发连接池重建",
+                    now - self._polling_error_start,
+                )
+                asyncio.create_task(self._stop_polling_for_recovery())
 
     async def _disable_polling_on_conflict(self) -> None:
         """Conflict 时关闭 updater 轮询，保留 bot 发送能力。
@@ -919,31 +933,50 @@ class TelegramChannel(ChannelAdapter):
         输出:
             None。
         """
-        updater = self._app.updater
-        if updater is not None and updater.running:
+        try:
+            updater = self._app.updater
+            if updater is not None and updater.running:
+                try:
+                    await updater.stop()
+                except Exception as e:
+                    logger.warning("[telegram] 恢复: stop updater 失败: %s", e)
+            # 销毁脏连接池并重建（带超时保护，防止池满时 hang 住）
             try:
-                await updater.stop()
+                await asyncio.wait_for(self._app.bot.shutdown(), timeout=10.0)
+            except asyncio.TimeoutError:
+                logger.error(
+                    "[telegram] 恢复: bot.shutdown() 超时（10s），"
+                    "旧连接池可能仍有残留连接"
+                )
             except Exception as e:
-                logger.warning("[telegram] 恢复: stop updater 失败: %s", e)
-        try:
-            await self._app.bot.shutdown()
-            await self._app.bot.initialize()
-        except Exception as e:
-            logger.error("[telegram] 恢复: 重建 httpx 连接池失败: %s", e)
-            return
-        updater = self._app.updater
-        if updater is None:
-            logger.error("[telegram] 恢复: updater 为空")
-            return
-        try:
-            await updater.start_polling(
-                allowed_updates=Update.ALL_TYPES,
-                error_callback=self._on_polling_error,
-            )
-            self._error_streak_start = 0.0
-            logger.info("[telegram] polling 已通过重建连接池恢复成功")
-        except Exception as e:
-            logger.error("[telegram] 恢复: start_polling 失败: %s", e)
+                logger.error("[telegram] 恢复: bot.shutdown() 失败: %s", e)
+            try:
+                await asyncio.wait_for(self._app.bot.initialize(), timeout=10.0)
+            except asyncio.TimeoutError:
+                logger.error(
+                    "[telegram] 恢复: bot.initialize() 超时（10s），"
+                    "请检查 Telegram API 连通性"
+                )
+                return
+            except Exception as e:
+                logger.error("[telegram] 恢复: bot.initialize() 失败: %s", e)
+                return
+            updater = self._app.updater
+            if updater is None:
+                logger.error("[telegram] 恢复: updater 为空")
+                return
+            try:
+                await updater.start_polling(
+                    allowed_updates=Update.ALL_TYPES,
+                    error_callback=self._on_polling_error,
+                )
+                logger.info("[telegram] polling 已通过重建连接池恢复成功")
+            except Exception as e:
+                logger.error("[telegram] 恢复: start_polling 失败: %s", e)
+        finally:
+            # 无条件重置：防止计数器残留导致后续误触发
+            self._polling_error_start = 0.0
+            self._recovery_scheduled = False
 
 
     # ── 私有方法：polling 存活看门狗 ─────────────────────────
@@ -952,9 +985,9 @@ class TelegramChannel(ChannelAdapter):
     async def _polling_watchdog(self) -> None:
         """每 30s 检查 polling 存活状态。
 
-        - polling 正常：健康检查（get_me），失败则记录
-        - 健康检查连续失败 > 120s：触发连接池重建恢复
-        - polling 死亡（updater.running=False）：原有重启逻辑
+        - polling 正常：检测 _on_polling_error 回调，连续报错则触发恢复
+        - polling 死亡（updater.running=False）：重建连接池后重启
+        - 僵尸检测：polling 名义存活但持续报错 > 阈值 → 主动触发连接池重建
         - 断联超过阈值未恢复：向已知用户发送断联警告
         - 重启成功 + 之前断联过：发送恢复通知
 
@@ -982,26 +1015,24 @@ class TelegramChannel(ChannelAdapter):
 
             if polling_alive:
                 # ── polling 存活 ──
-                self._last_polling_ok = now
-                # 健康检查：用 get_me 探测连接池是否存活
-                try:
-                    await self._app.bot.get_me(read_timeout=5, connect_timeout=5)
-                except Exception as e:
-                    if self._error_streak_start == 0.0:
-                        self._error_streak_start = now
-                    logger.warning(
-                        "[telegram] 健康检查失败: %s（连续 %.0fs）",
-                        e, now - self._error_streak_start,
-                    )
-                    if now - self._error_streak_start > self._ERROR_STREAK_STOP_THRESHOLD:
+                # 僵尸检测：polling 名义上活着但 error 回调持续报错
+                if self._polling_error_start > 0.0:
+                    error_streak = now - self._polling_error_start
+                    if (
+                        error_streak > self._ERROR_STREAK_STOP_THRESHOLD
+                        and not self._recovery_scheduled
+                    ):
+                        self._recovery_scheduled = True
                         logger.warning(
-                            "[telegram] 健康检查连续失败 %.0fs，触发连接池重建",
-                            now - self._error_streak_start,
+                            "[telegram] 看门狗检测到僵尸 polling（连续报错 %.0fs），"
+                            "触发连接池重建",
+                            error_streak,
                         )
                         asyncio.create_task(self._stop_polling_for_recovery())
                 else:
-                    if self._error_streak_start > 0:
-                        self._error_streak_start = 0.0
+                    # 无报错 → 记录正常心跳
+                    self._last_polling_ok = now
+
                 if outage_start is not None:
                     outage_duration = now - outage_start
                     outage_start = None
@@ -1040,16 +1071,13 @@ class TelegramChannel(ChannelAdapter):
                     await self._notify_disconnect(outage_duration)
                     self._outage_warning_sent = True
 
-                # 尝试重启 polling
-                try:
-                    await updater.start_polling(
-                        allowed_updates=Update.ALL_TYPES,
-                        error_callback=self._on_polling_error,
-                    )
-                    logger.info("[telegram] polling 已通过看门狗重启成功")
-                except Exception as e:
-                    logger.error(
-                        "[telegram] polling 看门狗重启失败（30s 后重试）: %s", e
+                # 重建连接池后重启 polling（避免复用已污染的池）
+                if not self._recovery_scheduled:
+                    self._recovery_scheduled = True
+                    asyncio.create_task(self._stop_polling_for_recovery())
+                else:
+                    logger.info(
+                        "[telegram] 恢复任务已在执行中，看门狗跳过重复触发"
                     )
 
     async def _notify_disconnect(self, outage_seconds: float) -> None:
