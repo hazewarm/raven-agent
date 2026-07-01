@@ -86,6 +86,7 @@ class TelegramChannel(ChannelAdapter):
         interrupt_manager: "InterruptManager | None" = None,
         event_bus: EventBus | None = None,
     ) -> None:
+        self._token = token
         self._bus = bus
         self._session_manager = session_manager
         self._interrupt_manager = interrupt_manager
@@ -935,12 +936,29 @@ class TelegramChannel(ChannelAdapter):
         """
         try:
             updater = self._app.updater
+            stop_timed_out = False
+
+            # ── Step 1: 停止 updater（带超时保护） ──
+            # 池满 / TCP connect 超时时，polling 循环卡在
+            # getUpdates() 的 IO 等待上，updater.stop() 会
+            # 跟着一起 hang 住。用 15s 超时兜底，
+            # 先跳出，留给后面的步骤处理遗留的旧 task。
             if updater is not None and updater.running:
                 try:
-                    await updater.stop()
+                    await asyncio.wait_for(updater.stop(), timeout=15.0)
+                except asyncio.TimeoutError:
+                    stop_timed_out = True
+                    logger.error(
+                        "[telegram] 恢复: stop updater 超时（15s），"
+                        "旧 polling 卡在 IO 等待，将在关闭连接池后重试"
+                    )
                 except Exception as e:
                     logger.warning("[telegram] 恢复: stop updater 失败: %s", e)
-            # 销毁脏连接池并重建（带超时保护，防止池满时 hang 住）
+
+            # ── Step 2: 销毁旧连接池 ──
+            # 关闭 httpx 客户端 → 卡死的 getUpdates() 收到
+            # 连接关闭通知 → PTB 内部检查 running=False →
+            # 旧 polling task 退出。
             try:
                 await asyncio.wait_for(self._app.bot.shutdown(), timeout=10.0)
             except asyncio.TimeoutError:
@@ -950,6 +968,25 @@ class TelegramChannel(ChannelAdapter):
                 )
             except Exception as e:
                 logger.error("[telegram] 恢复: bot.shutdown() 失败: %s", e)
+
+            # ── Step 3: 补刀 —— 确保旧 polling task 已退出 ──
+            # 仅当 Step 1 超时时才需要：此时旧 task 还未退出，
+            # 但 Step 2 已经切断了它的连接，再次 stop 应很快返回。
+            if stop_timed_out and updater is not None:
+                try:
+                    await asyncio.wait_for(updater.stop(), timeout=5.0)
+                    logger.info(
+                        "[telegram] 恢复: 旧 polling 在连接断开后成功停止"
+                    )
+                except asyncio.TimeoutError:
+                    logger.error(
+                        "[telegram] 恢复: 重试 stop 仍超时（5s），"
+                        "将强制 start_polling（PTB 内部 guard 会保护）"
+                    )
+                except Exception:
+                    pass  # 可能已处于停止状态
+
+            # ── Step 4: 创建全新连接池 ──
             try:
                 await asyncio.wait_for(self._app.bot.initialize(), timeout=10.0)
             except asyncio.TimeoutError:
@@ -961,6 +998,8 @@ class TelegramChannel(ChannelAdapter):
             except Exception as e:
                 logger.error("[telegram] 恢复: bot.initialize() 失败: %s", e)
                 return
+
+            # ── Step 5: 启动全新 polling ──
             updater = self._app.updater
             if updater is None:
                 logger.error("[telegram] 恢复: updater 为空")
@@ -1028,6 +1067,12 @@ class TelegramChannel(ChannelAdapter):
                             "触发连接池重建",
                             error_streak,
                         )
+                        # 标记断联起点，确保恢复后能触发 _notify_reconnect
+                        if outage_start is None:
+                            outage_start = now - error_streak
+                        if not self._outage_warning_sent:
+                            await self._notify_disconnect(error_streak)
+                            self._outage_warning_sent = True
                         asyncio.create_task(self._stop_polling_for_recovery())
                 else:
                     # 无报错 → 记录正常心跳
@@ -1083,8 +1128,8 @@ class TelegramChannel(ChannelAdapter):
     async def _notify_disconnect(self, outage_seconds: float) -> None:
         """向所有已知 Telegram 用户发送断联警告。
 
-        bot.send_message() 走独立 HTTP POST，不依赖 polling，
-        即使 polling 死了也能发出。
+        使用独立的 httpx.AsyncClient 直连 Telegram API，完全避开 Bot 的连接池，
+        确保在池满/卡死时仍能发出通知。
 
         输入:
             outage_seconds: 断联已持续的秒数。
@@ -1092,6 +1137,8 @@ class TelegramChannel(ChannelAdapter):
         输出:
             None。单个用户通知失败不影响其他用户。
         """
+        import httpx  # pylint: disable=import-outside-toplevel
+
         chat_ids: set[str] = set(self._known_chat_ids)
         chat_ids.update(self._identity_index.mapping.values())
 
@@ -1112,19 +1159,26 @@ class TelegramChannel(ChannelAdapter):
             )
 
         count = 0
-        for chat_id in chat_ids:
-            try:
-                await send_markdown(
-                    self._app.bot,
-                    chat_id,
-                    msg,
-                    self._telegram_outbound_limiter,
-                )
-                count += 1
-            except Exception as e:
-                logger.warning(
-                    "[telegram] 断联警告发送失败 chat_id=%s: %s", chat_id, e,
-                )
+        url = f"https://api.telegram.org/bot{self._token}/sendMessage"
+        async with httpx.AsyncClient(
+            timeout=httpx.Timeout(15.0, connect=10.0),
+        ) as client:
+            for chat_id in chat_ids:
+                try:
+                    resp = await client.post(
+                        url,
+                        json={
+                            "chat_id": chat_id,
+                            "text": msg,
+                        },
+                    )
+                    resp.raise_for_status()
+                    count += 1
+                except Exception as e:
+                    logger.warning(
+                        "[telegram] 断联警告发送失败 chat_id=%s: %s",
+                        chat_id, e,
+                    )
 
         logger.info(
             "[telegram] 已向 %d/%d 位用户发送断联警告",
